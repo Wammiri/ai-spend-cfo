@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { ValueTag } from "@/lib/types";
 import {
   resolveDimensions,
@@ -55,14 +56,52 @@ export function MappingEditor({
   mapping: ActorMapping;
   onChange: (next: ActorMapping) => void;
 }) {
+  const [suggesting, setSuggesting] = useState(false);
+
+  // D6: the deterministic rule map is the source of truth; Haiku only SUGGESTS a
+  // value tier for the listed actors (classification, never computation). The user
+  // keeps every override. The key stays server-side in the /api/memo route.
+  async function suggestTiers() {
+    setSuggesting(true);
+    try {
+      const res = await fetch("/api/memo", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "classify", labels: actors }),
+      });
+      const data = (await res.json()) as { suggestions?: { label: string; tier: ValueTag }[] };
+      let next = mapping;
+      for (const s of data.suggestions ?? []) {
+        if (actors.includes(s.label) && ["high", "medium", "low"].includes(s.tier)) {
+          next = upsertRule(next, s.label, { value_tag: s.tier });
+        }
+      }
+      onChange(next);
+    } catch {
+      // Suggestion is best-effort; on failure the deterministic defaults stand.
+    } finally {
+      setSuggesting(false);
+    }
+  }
+
   return (
     <div className="rounded-lg border border-hairline bg-surface shadow-card">
-      <div className="border-b border-hairline px-5 py-4">
-        <h2 className="text-sm font-semibold tracking-tight text-ink">Owner mapping</h2>
-        <p className="mt-0.5 text-xs text-muted">
-          Assign each API key to a team, project, and value tier. Unmapped keys fall to
-          Unassigned and fire the missing-owner flag. Edits update the dashboard live.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-hairline px-5 py-4">
+        <div>
+          <h2 className="text-sm font-semibold tracking-tight text-ink">Owner mapping</h2>
+          <p className="mt-0.5 text-xs text-muted">
+            Assign each API key to a team, project, and value tier. Unmapped keys fall to
+            Unassigned and fire the missing-owner flag. Edits update the dashboard live.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={suggestTiers}
+          disabled={suggesting || actors.length === 0}
+          className="inline-flex shrink-0 items-center rounded-md border border-hairline-strong bg-paper px-3 py-1.5 text-sm text-ink transition-colors hover:bg-panel disabled:opacity-50"
+        >
+          {suggesting ? "Suggesting..." : "Suggest value tiers"}
+        </button>
       </div>
 
       <div className="overflow-x-auto">
@@ -133,8 +172,9 @@ export function MappingEditor({
         </table>
       </div>
       <p className="px-5 py-3 text-xs text-faint">
-        Environment defaults to the seeded rule. Value-tier suggestions for
-        unmapped workflows (Haiku classification) arrive with the live memo.
+        Environment defaults to the seeded rule. Suggest value tiers asks a Haiku
+        model to classify these keys (D6); the deterministic map stays the source
+        of truth and every suggestion is editable.
       </p>
     </div>
   );
