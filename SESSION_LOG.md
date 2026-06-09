@@ -47,6 +47,10 @@ New requirements surfaced from the user after B0. Per the methodology they enter
 
 **Next (updated):** Batch B0.5 using the filled prompt at the bottom of BATCH_PLAN.md.
 
+### Addendum, same day: git remote created and pushed (D18 resolved)
+
+The user chose a public GitHub repo. Using the already-authed `gh` CLI (account Wammiri), created https://github.com/Wammiri/ai-spend-cfo (public), added it as `origin`, and pushed `main` (both commits). Verified the full history was secret-clean before the public push (`git log -p --all` grep for the key body: no matches). Pushing over the corporate proxy required `git config --local http.schannelCheckRevoke false` (same proxy-revocation root cause as the npm `--use-system-ca` workaround; local to `.git/config`, not committed). This completes B0.5 task 1 (remote + push); B0.5's remaining scope is the Tailwind switch (D23) and Playwright (D24). The only open infra step is the human connecting Vercel to the repo for auto-deploy.
+
 ---
 
 ## 2026-06-09, B-pack: Pack generation (setup batch)

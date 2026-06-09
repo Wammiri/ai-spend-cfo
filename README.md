@@ -49,6 +49,15 @@ This is a per-machine network workaround and is deliberately not committed to th
 repo (Vercel and unproxied machines do not need it). The repo-level `.npmrc` only
 sets `legacy-peer-deps=true`, which Tremor 3.x requires under React 19.
 
+Pushing over HTTPS through the same proxy also fails its certificate revocation
+check. This repo's local git config disables that check:
+
+```powershell
+git config --local http.schannelCheckRevoke false
+```
+
+That setting lives in `.git/config` (not tracked) and is also per-machine.
+
 ## The building pack
 
 State lives in files, not chat. Read order each session: `DECISIONS.md`, then

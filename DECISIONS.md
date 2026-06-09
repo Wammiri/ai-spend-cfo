@@ -126,7 +126,7 @@ House rule observed: no em dashes.
 ### D18: Source control and remote (partly resolved in B0)
 - **Decision:** The working directory is not yet a git repository. Initializing git, choosing a remote, and the first commit are pending and belong to the human (remote choice) plus Batch B0 (init and first commit of the pack and scaffold).
 - **Why:** The methodology requires the pack committed and pushed, but choosing a remote is a human/business decision and pushing was not requested in the pack-generation session.
-- **Confidence:** User-confirmed (not a git repo per environment). **Status:** Local part resolved in Batch B0 (2026-06-09): git initialized and the genesis commit (pack plus scaffold) made on `main`. Still pending the human: choose and add a remote, push, and confirm the Vercel project. No push has happened. **Flagged in SESSION_LOG.md.**
+- **Confidence:** User-confirmed (not a git repo per environment). **Status:** RESOLVED (2026-06-09). Git initialized, genesis commit on `main` (B0), and the user chose a public GitHub repo: remote `origin` added at https://github.com/Wammiri/ai-spend-cfo and `main` pushed. Remaining is one human web step: connect Vercel to the repo so it auto-deploys on push. **Git note (machine-specific, not committed):** pushing over HTTPS through the corporate proxy needed `git config --local http.schannelCheckRevoke false` (same proxy-revocation cause as the npm `--use-system-ca` workaround); set in `.git/config`, not tracked.
 
 ---
 

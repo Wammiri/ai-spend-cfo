@@ -21,7 +21,7 @@ One batch, one fresh session. Each batch lists the exact files it may touch and 
 |---|---|---|---|
 | B-pack | Pack generation | Done (2026-06-09) | DISCOVERY.md |
 | B0 | Scaffold + toolchain proof | Done (2026-06-09); Vercel deploy + remote pending human | B-pack |
-| B0.5 | Tooling switch + remote (Tailwind, Recharts-direct, Playwright, git remote + first push) | Not started (next) | B0 |
+| B0.5 | Tooling switch + remote (Tailwind, Recharts-direct, Playwright, git remote + first push) | Remote done + pushed (2026-06-09); Tailwind + Playwright pending (next) | B0 |
 | B1 | Static credible demo | Not started | B0.5 |
 | B2 | Real ingestion | Not started | B0.5 (uses B1 UI shell) |
 | B3 | Budget and forecast engine | Not started | B2 |
@@ -115,9 +115,9 @@ ai_spend_cfo/
 
 ## B0.5: Tooling switch + remote
 
-- **Status:** Not started (next).
+- **Status:** Partly done (2026-06-09). Task 1 (git remote + first push) is complete: public repo at https://github.com/Wammiri/ai-spend-cfo, `main` pushed (D18 resolved). Remaining and next: tasks 2 and 3 (Tailwind switch, Playwright), plus the human connecting Vercel.
 - **Depends on:** B0.
-- **Goal:** Settle the infrastructure before any product UI is built, so B1 builds on the final stack. Three things, no product design: (1) connect the git remote and push (finish D18); (2) switch the UI stack from `@tremor/react` to Tailwind CSS plus Recharts-direct (D23); (3) install Playwright as the standing behavioral harness (D24). Then re-prove the toolchain and push.
+- **Goal:** Settle the infrastructure before any product UI is built, so B1 builds on the final stack. Three things, no product design: (1) DONE: git remote + push (D18); (2) switch the UI stack from `@tremor/react` to Tailwind CSS plus Recharts-direct (D23); (3) install Playwright as the standing behavioral harness (D24). Then re-prove the toolchain and push.
 - **Done when:**
   - The repo has a remote and `main` is pushed; Vercel is connected so it auto-deploys on push (human confirms the deploy is live).
   - `@tremor/react` is removed; Tailwind CSS is configured (config, PostCSS, `app/globals.css` directives imported in the layout) and a Tailwind-styled element renders; Recharts is on its current v3 line; the `.npmrc` `legacy-peer-deps` line is removed and install is clean with no peer override.
@@ -240,9 +240,11 @@ Context not obvious from a skim, stated explicitly:
 
 Batch: B0.5 (Tooling switch + remote)
 Tasks:
-1. Remote + push: confirm the remote target with the user (default: a public GitHub
-   repo named `ai-spend-cfo`), add it, push `main` (finishes D18). Confirm Vercel is
-   connected so it auto-deploys on push.
+1. DONE already (2026-06-09): remote is set up and `main` is pushed to the public repo
+   https://github.com/Wammiri/ai-spend-cfo (D18 resolved). Nothing to do here except push
+   this batch at the end as usual. (Note: pushing needs `git config --local
+   http.schannelCheckRevoke false` on this machine, already set in .git/config.) The human
+   connects Vercel to the repo for auto-deploy; that is their step, not yours.
 2. UI stack switch (D23): remove @tremor/react; set up Tailwind CSS (tailwind.config.ts,
    postcss.config.mjs, app/globals.css imported in app/layout.tsx); move Recharts to its
    current v3 line; remove the .npmrc legacy-peer-deps line and reinstall clean
