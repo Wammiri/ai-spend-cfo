@@ -3,7 +3,7 @@
 **Version:** 1.0
 **Date:** 2026-06-09
 **Source:** DISCOVERY.md §13 (proposed batch sequence), sequenced by impact and dependency.
-**Status:** B0, B0.5, B1, and B2 complete (2026-06-09): toolchain proven, Tailwind v4 + Recharts v3 + Playwright in place, remote pushed, the static credible demo built, and real ingestion shipped (canonical + Anthropic Console parsers, versioned pricing, cost derivation + reconciliation, editable owner mapping, methodology page, in-browser upload surface), all green on all gates (49 Vitest, 13 Playwright). Next batch to run is B3. Plan amended 2026-06-09: push after every batch and Playwright as the standing UI harness are now explicit (D24); the dashboard UI switched from `@tremor/react` to Tailwind v4 plus Recharts-direct (D23, executed as D25); B1 scope/design recorded as D26; B2 ingestion architecture/scope as D27 and its file-list refinements, the Vitest forks-pool fix, and standing human gates as D28.
+**Status:** B0, B0.5, B1, B2, and B3 complete (2026-06-09): toolchain proven, Tailwind v4 + Recharts v3 + Playwright in place, remote pushed, the static credible demo built, real ingestion shipped, and the budget + forecast engine landed (pure budget/forecast modules with the D13 guards, illustrative sample department budgets, and dashboard budget-vs-actual + forward-outlook panels), all green on all gates (76 Vitest, 14 Playwright). Next batch to run is B4. Plan amended 2026-06-09: push after every batch and Playwright as the standing UI harness are now explicit (D24); the dashboard UI switched from `@tremor/react` to Tailwind v4 plus Recharts-direct (D23, executed as D25); B1 scope/design recorded as D26; B2 ingestion architecture/scope as D27 and its file-list refinements, the Vitest forks-pool fix, and standing human gates as D28; B3 engine architecture, scope, the illustrative-budget gate, and the closed-month forecast framing as D29.
 
 House rule observed: no em dashes.
 
@@ -24,7 +24,7 @@ One batch, one fresh session. Each batch lists the exact files it may touch and 
 | B0.5 | Tooling switch + remote (Tailwind, Recharts-direct, Playwright, git remote + first push) | Done (2026-06-09); Vercel connect pending human | B0 |
 | B1 | Static credible demo | Done (2026-06-09) | B0.5 |
 | B2 | Real ingestion | Done (2026-06-09); rung-4 (builder's real export) pending human | B0.5 (uses B1 UI shell) |
-| B3 | Budget and forecast engine | Not started | B2 |
+| B3 | Budget and forecast engine | Done (2026-06-09) | B2 |
 | B4 | Waste/risk + AI memo | Not started | B3 |
 | B5 | Integrate finance-report-pdf skill | Not started | B4, and the skill authored separately |
 | B6 | Export and share | Not started | B5 |
@@ -152,7 +152,7 @@ ai_spend_cfo/
 
 ## B3: Budget and forecast engine
 
-- **Status:** Not started.
+- **Status:** Done (2026-06-09, D29). Shipped the pure budget + forecast engine (`lib/metrics/forecast.ts`, `lib/metrics/budget.ts`) with the D13 guards (calendar pace default + business-day one-line switch; no-budget and early months never read as overruns; status judged on the run-rate projection; a closed month projects to its actual), the dataset glue in `aggregate.ts` (`buildBudgetReport`, `buildOutlook`), illustrative sample department budgets appended to `data/northstar.json` via the generator (events byte-identical; labeled "not confirmed"), and two dashboard panels (`budget-vs-actual`, `forecast-outlook`) wired into the dashboard above the charts. Verified at rung 2 (76 Vitest incl. hand-computed scenarios, the guards, and a sample-data hand-check reconciling to the $460.10 org overrun) PLUS rung 3 (the new `e2e/dashboard.spec.ts` case) since UI changed (D24). Out-of-list files (generator, dashboard page, dashboard e2e) recorded per D17 in D29. Pushed; Vercel deploy pending human connect. **Open human gate: confirm or replace the illustrative sample budgets** (a business input, labeled "not confirmed").
 - **Depends on:** B2 (needs normalized rows and derived cost).
 - **Goal:** Budgets by dimension (department / workflow / model / project / environment); variance, pace, projection, scenarios, and the forecast guards (D13), all in pure functions.
 - **Done when:** numbers reconcile against a hand-check on the sample data; early-month and no-budget cases produce honest labels, not false overruns.

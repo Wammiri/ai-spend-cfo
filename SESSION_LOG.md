@@ -6,6 +6,38 @@ House rule observed: no em dashes.
 
 ---
 
+## 2026-06-09, B3: Budget and forecast engine (pure math + dashboard panels)
+
+Built the budget and forecast engine as pure functions and surfaced it on the dashboard. Architecture, scope, the illustrative-budget gate, and the closed-month framing are recorded as D29.
+
+**What landed:**
+- **Forecast engine (D13).** `lib/metrics/forecast.ts`: `PeriodContext` + `periodContext` (the one place a date enters, supplied explicitly; a closed month is fully elapsed and reads no clock), `pace` (calendar default, business-day pacing as a one-line switch via `DEFAULT_PACING_BASIS`), `runRateProjection` (equals the actual for a closed month, no FP drift), and `deriveForecast` (run-rate, recent-trend, and base/upside/control scenarios with a `controlSavings` figure and an early/closed/projected confidence label).
+- **Budget engine (D13).** `lib/metrics/budget.ts`: `computeBudgetLine` (pace, expected-to-date, variance-to-date, run-rate projection, projected variance, used/projected-used pct, status) and `summarizeBudgetLines`. Status is decided in code with the guards: `no-budget` and `early` are NEVER reported as overruns; otherwise status is judged on the PROJECTED used-fraction (overrun >1.0, at-risk >=0.90, else healthy), so an open month is assessed on where it is heading.
+- **Dataset glue (the "budget-vs-actual aggregation").** `lib/metrics/aggregate.ts`: `Budget` type, `budgets?` on the dataset, `buildBudgetReport(dataset, ctx, dimension="team")`, and `buildOutlook(dataset, ctx)`. Dimension-generic (team/workflow/model/project/environment); the sample budgets are on `team`.
+- **Sample budgets.** `data/generate-northstar.mjs` now appends a `budgets` block AFTER event generation (RNG and every event byte-identical, verified against HEAD) and prints budget-vs-actual. Illustrative monthly department budgets, labeled "not confirmed business figures" (`meta.budgets_note`): DS 2000, Eng 1600, Mkt 700, Prod 600, CS 500, Fin 250, Sales 150 (org 5800). The story: Data Science and Marketing overrun, Engineering at budget, the rest healthy, org over by $460.10 (7.9%).
+- **Dashboard panels.** `components/budget-vs-actual.tsx` (department table: budget, actual, worded variance, % used bar, status pill, org total) and `components/forecast-outlook.tsx` (the three scenarios as forward planning figures with the control saving). Wired into `app/dashboard/page.tsx` above the charts; the stale "budgets ... arrive next" footer line was corrected (budgets/outlook are now computed here; the live memo is next).
+
+**Verification:** Rung 2 (the plan's requirement) PLUS rung 3 for the changed UI (D24). All green.
+- `npm run typecheck`, `npm run lint`: clean.
+- `npm run test` (Vitest): 9 files, 76 tests pass. New: `forecast.test.ts` (period context incl. 30/28-day months, calendar vs business pace against an independent weekday oracle, run-rate, scenarios, the early/closed/projected guards) and `budget.test.ts` (overrun/at-risk/healthy, the no-budget and early guards, projection-driven status, and a sample-data hand-check that `buildBudgetReport` reconciles to the known team totals and the $460.10 org overrun, plus the unbudgeted-workflow no-budget path).
+- `npm run build`: success, 6 routes. Same benign Recharts width(-1) SSR warnings.
+- `npx playwright test`: 14 pass (~1.3m), including the new B3 case (budget vs actual renders the variances, statuses, and total; the forward outlook shows the closed-month framing and the $664.27 control saving).
+- Secret scan before commit: no key patterns in the diff; `.env.local` stays gitignored.
+
+**Commits pushed:** see below; pushed to `origin/main` at the end of the batch (Vercel auto-deploys once the human connects it).
+
+**Flags for you:**
+- **Illustrative sample budgets (D29):** the per-department budgets are demo figures labeled "not confirmed", same stance as the pricing table. Confirm or replace them; they live in `data/generate-northstar.mjs` (regenerate) and the committed `data/northstar.json`.
+- **Budget thresholds:** at-risk at 90% and overrun above 100% of the projected budget are a sensible default, open to tuning (`AT_RISK_FLOOR` / `OVERRUN_FLOOR` in `lib/metrics/budget.ts`).
+- **Closed-month forecast:** the sample is a closed month, so the outlook panel shows forward PLANNING scenarios (clearly labeled), not a within-month forecast. The full forecast/guard behavior is proven in `forecast.test.ts` for open months.
+- **Standing (unchanged):** Vercel connect, `ANTHROPIC_API_KEY` before B4, pricing values + Anthropic export format + your real export (B2 gates), and rotating the exposed B0 key.
+
+**Parked:** the rung-4 live proof on the builder's real export (B2 gate); Vercel connect.
+
+**Next:** Batch B4 (waste/risk + AI memo): quantified flags with model-tier repricing (D12), the live serverless memo route (D3), and both controls (C1 eligibility partition, C2 number-integrity) with their tests. The memo consumes B3's budgets and forecast.
+
+---
+
 ## 2026-06-09, B2: Real ingestion (parsers, cost + reconciliation, mapping, methodology, upload)
 
 Built the full ingestion path on the B1 shell: an upload is parsed in-browser, normalized to the canonical schema, cost re-derived from a versioned pricing table, reconciled against any provider-reported cost, and owners resolved through a visible editable mapping. Architecture, scope, and the deviations are recorded as D27 and D28.
