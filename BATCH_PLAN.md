@@ -3,7 +3,7 @@
 **Version:** 1.0
 **Date:** 2026-06-09
 **Source:** DISCOVERY.md §13 (proposed batch sequence), sequenced by impact and dependency.
-**Status:** B0, B0.5, B1, B2, and B3 complete (2026-06-09): toolchain proven, Tailwind v4 + Recharts v3 + Playwright in place, remote pushed, the static credible demo built, real ingestion shipped, and the budget + forecast engine landed (pure budget/forecast modules with the D13 guards, illustrative sample department budgets, and dashboard budget-vs-actual + forward-outlook panels), all green on all gates (76 Vitest, 14 Playwright). Next batch to run is B4. Plan amended 2026-06-09: push after every batch and Playwright as the standing UI harness are now explicit (D24); the dashboard UI switched from `@tremor/react` to Tailwind v4 plus Recharts-direct (D23, executed as D25); B1 scope/design recorded as D26; B2 ingestion architecture/scope as D27 and its file-list refinements, the Vitest forks-pool fix, and standing human gates as D28; B3 engine architecture, scope, the illustrative-budget gate, and the closed-month forecast framing as D29.
+**Status:** B0, B0.5, B1, B2, B3, and B4 complete (2026-06-09): toolchain proven, Tailwind v4 + Recharts v3 + Playwright in place, remote pushed, the static credible demo built, real ingestion shipped, the budget + forecast engine landed, and the live AI memo shipped (the moat). B4 added the quantified waste/risk flags with model-tier repricing (D12), the live rate-limited key-server-side memo route (D3), both credibility controls (C1 eligibility in code, C2 number-integrity post-validation) with tests proving the allowed AND forbidden case, and the wired Haiku value-tag suggestion (D6/D27 closed). All green on all gates (104 Vitest, 16 Playwright) plus rung-4 live against the real Claude API. Next batch to run is B5. Plan amended 2026-06-09: push after every batch and Playwright as the standing UI harness are now explicit (D24); the dashboard UI switched from `@tremor/react` to Tailwind v4 plus Recharts-direct (D23, executed as D25); B1 scope/design recorded as D26; B2 ingestion architecture/scope as D27 and its file-list refinements, the Vitest forks-pool fix, and standing human gates as D28; B3 engine architecture, scope, the illustrative-budget gate, and the closed-month forecast framing as D29; B4 architecture, the two controls, the value-tag wiring, the route security posture, and the deviations as D30.
 
 House rule observed: no em dashes.
 
@@ -25,7 +25,7 @@ One batch, one fresh session. Each batch lists the exact files it may touch and 
 | B1 | Static credible demo | Done (2026-06-09) | B0.5 |
 | B2 | Real ingestion | Done (2026-06-09); rung-4 (builder's real export) pending human | B0.5 (uses B1 UI shell) |
 | B3 | Budget and forecast engine | Done (2026-06-09) | B2 |
-| B4 | Waste/risk + AI memo | Not started | B3 |
+| B4 | Waste/risk + AI memo | Done (2026-06-09); rung-4 verified live; PRICING_CONFIRMED + real export pending human | B3 |
 | B5 | Integrate finance-report-pdf skill | Not started | B4, and the skill authored separately |
 | B6 | Export and share | Not started | B5 |
 
@@ -162,7 +162,7 @@ ai_spend_cfo/
 
 ## B4: Waste/risk + AI memo
 
-- **Status:** Not started.
+- **Status:** Done (2026-06-09, D30). Shipped the quantified waste/risk flags with model-tier repricing (`lib/metrics/risk.ts`, D12), control C1 (`lib/metrics/eligibility.ts`, needs-review decided in code), the computed memo inputs and assembly (`lib/memo/build-inputs.ts`, with the B3 budget report + forecast folded in per D26), the prompt and Haiku classify contract (`lib/memo/prompt.ts`), control C2 (`lib/memo/validate.ts`, number-integrity post-validation), the live rate-limited key-server-side route (`app/api/memo/route.ts`, D3, with the Haiku value-tag classify action, D6), and the UI (`components/risk-view.tsx`, `components/generate-memo.tsx`, wired into `app/upload/page.tsx`; the "Suggest value tiers" button in `components/mapping-editor.tsx`). The cached hero memo and MemoView were left untouched (the live route is where budgets/forecast/repricing appear on data that carries them). Out-of-list files (upload-page wiring, `build-inputs.test.ts`, `e2e/memo-live.spec.ts`) recorded per D17 in D30. Verified at rung 2 (104 Vitest incl. the C1 golden, C2 both-cases, the D12 repricing hand-check, and a C1+C2-on-real-data integration), rung 3 (16 Playwright incl. two new live-memo cases with `/api/memo` mocked), and rung 4 (live against the real Claude API: memo returns 200 with C2 clean; Haiku classify returns suggestions). Pushed; Vercel auto-deploys. **Open human gates: confirm pricing values (D11, repricing magnitude is illustrative until then) and drop the builder's real export into `/upload` (D9).**
 - **Depends on:** B3 (the memo consumes budgets, forecast, and flags).
 - **Goal:** Quantified waste/risk flags with model-tier repricing (D12), the live serverless memo route (D3), and both controls (C1 eligibility partition, C2 number-integrity) implemented with their tests.
 - **Done when:** the memo is accurate, names only supported drivers, marks thin-data causes "needs review" and excludes them from recommendations, every flag shows a dollar impact, and no unsupported figure survives in the output.

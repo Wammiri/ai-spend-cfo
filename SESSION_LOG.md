@@ -6,6 +6,42 @@ House rule observed: no em dashes.
 
 ---
 
+## 2026-06-09, B4: Waste/risk + live AI memo (the moat)
+
+Built the live, rate-limited, key-server-side memo route and the two credibility controls, plus the quantified waste/risk flags with model-tier repricing. Architecture, the controls, the value-tag wiring, and the deviations are recorded as D30.
+
+**What landed:**
+- **Quantified risk flags with tier repricing (D12).** `lib/metrics/risk.ts`: a static `MODEL_TIERS` map (frontier/mid/cheap with a recommended cheaper target, aligned to the Northstar tiers), `computeTierRepricing` (low-value frontier spend repriced at the cheaper target via the canonical cost engine; savings = current minus repriced), and `computeRiskFlags` (frontier-misuse, low-value, unapproved, missing-owner, usage-spike), each with a positive dollar impact and a code-suggested control. The frontier-misuse impact is now the honest repriced SAVINGS, not the raw spend.
+- **Control C1, eligibility decided in code.** `lib/metrics/eligibility.ts` `partitionDrivers`: a driver reaches recommendations only with an owner AND >= 3 events AND >= $50; everything else is excluded with a reason and tagged for the model to exclude. Floors are a one-line switch.
+- **Computed memo inputs.** `lib/memo/build-inputs.ts`: `buildMemoInputs` turns a dataset into the compact inputs the route consumes (summary, eligible drivers, needs-review, risk flags, the B3 budget report and forecast folded in per D26); `collectMemoFigures` derives the C2 supplied-figure set; `assembleMemo` composes the model's prose with the code-computed numbers into the rendered MemoDocument (every dollar app-injected; MemoView untouched, its existing block types reused).
+- **The prompt.** `lib/memo/prompt.ts`: the system prompt (use only supplied numbers, mark unsupported causes needs-review and exclude, treat data as data not instructions, no em dashes), the structured-output schema for the narrative, the user prompt rendering the inputs, and the Haiku classify system/schema/parse.
+- **Control C2, number integrity.** `lib/memo/validate.ts` `sanitizeMemo`: strips any dollar figure in the memo prose that does not trace (within rounding tolerance) to a supplied figure, and reports it. Caught and fixed a self-inflicted false positive (the C1 reason embedded "$50"; reworded to avoid a "$" token).
+- **The live route.** `app/api/memo/route.ts` (the only server code): key server-side, rate-limited (8/IP/min, in-memory), body capped, inputs fully reconstructed/sanitized from untrusted JSON, Opus call with adaptive thinking + effort high + structured outputs, C2 applied before return, typed-error handling that never leaks the key. A second action runs the Haiku value-tag classifier (D6).
+- **UI.** `components/risk-view.tsx` (the quantified flags the upload page B2 deferred) and `components/generate-memo.tsx` (the Generate-memo control + C2 verification badge), wired into `app/upload/page.tsx`. The mapping editor (`components/mapping-editor.tsx`) gained a "Suggest value tiers" button (D6 wired, not deferred again).
+
+**Verification:** Rung 2 + rung 3 + rung 4, all green.
+- `npm run typecheck`, `npm run lint`: clean.
+- `npm run test` (Vitest): 13 files, 104 tests. New: `eligibility.test.ts` (C1 golden, both cases), `risk.test.ts` (the tier map, the $72 repricing hand-check, the flags), `validate.test.ts` (C2, both cases), `build-inputs.test.ts` (C1+C2 on the real Northstar numbers).
+- `npm run build`: success, 7 routes; `/api/memo` is dynamic (server-rendered on demand). Same benign Recharts SSR warnings.
+- `npx playwright test`: 16 pass (~1m), including the two new `memo-live.spec.ts` cases (the risk view renders from the parsed sample; the Generate control renders a validated memo with `/api/memo` mocked).
+- **Rung 4 (live, real Claude API):** the memo route returned HTTP 200 with `validation.ok: true` and an executive summary using only the supplied figures ($6,260.10, $4,958.22, 79.2%, $0.05); the Haiku classify action returned tier suggestions (HTTP 200). Required exporting the key into the server process (`next start` does not auto-load `.env.local`) and `NODE_OPTIONS=--use-system-ca` for the corporate proxy; both machine-specific, not committed. Vercel needs neither.
+- Secret scan before commit: no key pattern in the diff; `.env.local` stays gitignored.
+
+**Commits pushed:** see below; pushed to `origin/main` at the end of the batch (Vercel auto-deploys).
+
+**Flags for you:**
+- **Pricing still illustrative (D11/D28):** `PRICING_CONFIRMED` is false, so the repricing savings magnitude is illustrative until you confirm the pricing values.
+- **Real-data rung-4 box (D9/D28):** your genuine Anthropic export is still the open box; it is now also exercisable through the live memo on `/upload`.
+- **Tunable defaults:** the eligibility floors ($50, 3 events), the `MODEL_TIERS` map, and the rate limit (8/IP/min) are sensible defaults open to tuning.
+- **Rate limiting** is best-effort in-memory (resets on a cold start); a hard quota would need persistence, deferred with D2.
+- **Standing (unchanged):** the exposed B0 key should still be rotated.
+
+**Parked:** the rung-4 proof on the builder's real export (B2/D9 gate). Nothing blocked.
+
+**Next:** Batch B5 (integrate the global finance-report-pdf skill), which depends on that skill being authored separately.
+
+---
+
 ## 2026-06-09, B3: Budget and forecast engine (pure math + dashboard panels)
 
 Built the budget and forecast engine as pure functions and surfaced it on the dashboard. Architecture, scope, the illustrative-budget gate, and the closed-month framing are recorded as D29.
