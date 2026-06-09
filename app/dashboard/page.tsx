@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { SiteNav } from "@/components/site-nav";
 import { SampleBanner } from "@/components/sample-banner";
 import { KpiCard } from "@/components/kpi-card";
@@ -182,8 +183,11 @@ export default function DashboardPage() {
 
         <p className="mt-6 text-xs leading-5 text-faint">
           Every figure is computed by the deterministic metrics layer from the
-          canonical usage events. The methodology page (how cost is derived from
-          the pricing table) and live upload arrive in the next release.
+          canonical usage events. See the{" "}
+          <Link href="/methodology" className="text-accent underline-offset-2 hover:underline">methodology</Link>{" "}
+          for how cost is derived, or{" "}
+          <Link href="/upload" className="text-accent underline-offset-2 hover:underline">import</Link>{" "}
+          your own export. Budgets, forecasts, and the live memo arrive next.
         </p>
       </main>
     </div>

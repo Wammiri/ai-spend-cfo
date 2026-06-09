@@ -10,6 +10,8 @@ const LINKS = [
   { href: "/", label: "Overview" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/memo", label: "CFO Memo" },
+  { href: "/upload", label: "Import" },
+  { href: "/methodology", label: "Methodology" },
 ];
 
 export function SiteNav() {

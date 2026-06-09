@@ -1,7 +1,10 @@
 // Honest-labeling banner (DISCOVERY section 9 credibility gate): Northstar is
 // synthetic and must be labeled "sample" everywhere it appears. Shown on the
 // dashboard and the memo so a viewer is never misled into thinking the numbers
-// are real spend. Real own-spend and the Anthropic Console parser land in B2.
+// are real spend. The live Anthropic Console parser shipped in B2 (see Import);
+// real own-spend data is still being connected.
+
+import Link from "next/link";
 
 export function SampleBanner({ org = "Northstar AI Labs" }: { org?: string }) {
   return (
@@ -11,9 +14,9 @@ export function SampleBanner({ org = "Northstar AI Labs" }: { org?: string }) {
       </span>
       <p className="leading-snug">
         Synthetic demonstration data for{" "}
-        <span className="font-medium">{org}</span>. Not real spend. Real
-        own-spend and the live Anthropic Console parser arrive in the next
-        release.
+        <span className="font-medium">{org}</span>. Not real spend. Run the live
+        parser on your own export from{" "}
+        <Link href="/upload" className="font-medium underline underline-offset-2">Import</Link>; real own-spend data is still being connected.
       </p>
     </div>
   );
