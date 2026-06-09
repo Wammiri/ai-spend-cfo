@@ -14,10 +14,10 @@ auth, no multi-tenancy, and no database in v1. See `DISCOVERY.md` and
 ## Tech stack
 
 - Next.js (App Router) on Vercel, TypeScript throughout.
-- Tremor (on Recharts) for the dashboard; Recharts directly where Tremor lacks a chart.
+- Tailwind CSS v4 for styling (CSS-first: tokens live in `app/globals.css` under `@theme`); Recharts (direct) for charts. UI is built with the `frontend-design` skill to the institutional-finance-with-modern-execution brief.
 - Papa Parse for CSV ingestion.
 - Anthropic SDK for the memo and the value-tag classification calls.
-- Vitest for the deterministic compute tests.
+- Vitest for the deterministic compute tests; Playwright for behavioral / UI checks (the standing rung-3 harness).
 - PDFs are produced via the global `finance-report-pdf` skill (Typst), integrated at Batch B5.
 
 All numbers are computed by pure functions in `lib/metrics`. The AI never
@@ -30,8 +30,12 @@ npm run dev        # local dev server
 npm run build      # production build (proves the toolchain)
 npm run lint       # eslint (flat config, eslint-config-next)
 npm run typecheck  # tsc --noEmit
-npm run test       # vitest run
+npm run test       # vitest run (deterministic compute layer)
+npm run test:e2e   # playwright test (behavioral / UI smoke)
 ```
+
+Playwright needs its browser once: `npx playwright install chromium` (behind a
+TLS-inspecting proxy, run it with `$env:NODE_OPTIONS = "--use-system-ca"`).
 
 ## Local setup behind a TLS-inspecting corporate proxy
 
@@ -46,8 +50,10 @@ npm install
 ```
 
 This is a per-machine network workaround and is deliberately not committed to the
-repo (Vercel and unproxied machines do not need it). The repo-level `.npmrc` only
-sets `legacy-peer-deps=true`, which Tremor 3.x requires under React 19.
+repo (Vercel and unproxied machines do not need it). The same `--use-system-ca`
+env also lets the Playwright browser download succeed. There is no repo-level
+`.npmrc`: the install is clean with no peer override (the old `legacy-peer-deps`
+flag existed only for Tremor, which was removed in B0.5).
 
 Pushing over HTTPS through the same proxy also fails its certificate revocation
 check. This repo's local git config disables that check:

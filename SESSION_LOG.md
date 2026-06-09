@@ -6,6 +6,39 @@ House rule observed: no em dashes.
 
 ---
 
+## 2026-06-09, B0.5: Tooling switch (Tailwind + Recharts v3 + Playwright)
+
+Completed the rest of B0.5 (task 1, the git remote + first push, was already done in a prior session). This session did tasks 2 (UI stack switch) and 3 (Playwright), then re-proved the toolchain and pushed.
+
+**What landed:**
+- **Dropped `@tremor/react`.** Removed it from `package.json` and deleted `.npmrc` entirely (its only setting, `legacy-peer-deps=true`, existed solely for Tremor's stale React-18 peer). Reinstalled clean and confirmed with `npm ci`: 440 packages, zero ERESOLVE peer warnings, no Tremor or `@headlessui` left in the tree or lockfile.
+- **Tailwind CSS v4 set up (D25).** `tailwindcss@4.3.0` + `@tailwindcss/postcss@4.3.0`, both pinned. v4 is CSS-first, so there is NO `tailwind.config.ts` (a deliberate deviation from the plan's v3-style file list, flagged below and recorded as D25). Added `postcss.config.mjs` (the `@tailwindcss/postcss` plugin), `app/globals.css` (`@import "tailwindcss"` plus a restrained `@theme` token baseline; the full D20 palette is B1's job), imported `globals.css` in `app/layout.tsx`, and converted `app/page.tsx` from inline styles to Tailwind classes.
+- **Recharts moved to v3** (`2.15.4` -> `3.8.1`), its current line; resolves the D22 Recharts-v2 deprecation note.
+- **Playwright installed (D24).** `@playwright/test@1.60.0` pinned, Chromium browser build downloaded. Added `playwright.config.ts` (single chromium project, `webServer` runs the app) and `e2e/smoke.spec.ts`. The smoke is honest: besides title and the `<h1>`, it asserts the accent line's computed color equals the custom `--color-accent` token, which only resolves if Tailwind actually compiled the utilities and the `@theme` token (proves the stack is wired, not just installed). Added a `test:e2e` script and Playwright artifact dirs to `.gitignore`.
+
+**Verification:** Rung 1 + Vitest + rung 3 (Playwright), all green on the final tree:
+- `npm run build` (next build, Turbopack): success, 2 static routes, Tailwind v4 compiled through PostCSS.
+- `npm run lint` (eslint flat config): clean, exit 0.
+- `npm run typecheck` (tsc --noEmit, strict): clean, exit 0 (e2e and playwright config typecheck fine; Vitest is scoped to `lib/**/*.test.ts` so it does not pick up the e2e spec).
+- `npm run test` (vitest run): 1 file, 3 tests passed.
+- `npx playwright test`: 1 passed (chromium). Rung-4 confirmation that the Vercel deploy is live remains the human's step (Vercel connect).
+Secret scan before commit: only `.env.example` (empty key); `.env.local` stays gitignored; the diff adds no secrets.
+
+**Network note (unchanged, machine-specific, not committed):** installs still need `NODE_OPTIONS=--use-system-ca` behind the corporate proxy; pushing still needs `git config --local http.schannelCheckRevoke false` (already set in `.git/config`). The Playwright browser download (cdn.playwright.dev) succeeded under the same `--use-system-ca` env. One benign `EPERM` cleanup warning on a wasm binding dir during `npm ci` (Windows file lock), not a failure.
+
+**Commits pushed:** see flags; pushed to `origin/main` at the end of the batch (Vercel auto-deploys once the human connects it).
+
+**Flags for you:**
+- **Tailwind v4 vs v3 (D25):** the plan was written in v3 terms; I used v4 (current line, native Next 16 pairing, stronger portfolio signal, reversible) and did NOT create `tailwind.config.ts` (v4 is CSS-first). Surfaced per the ambiguity protocol. Say if you would rather pin v3.
+- **Vercel connect (still open from B0.5 task 1):** connect the repo to Vercel so each push auto-deploys; then the rung-4 "deploy is live" check can be confirmed.
+- **ANTHROPIC_API_KEY** (before B4) and **pricing values** (before B2) remain the standing human gates. The exposed key from the B0 addendum should still be rotated.
+
+**Parked:** Vercel connect (human gate). Nothing else.
+
+**Next:** Batch B1 (static credible demo) in a fresh session: landing + dashboard + precomputed memo on Northstar sample data, built with `frontend-design` to the D20 brief on this Tailwind v4 baseline.
+
+---
+
 ## 2026-06-09, B0: Scaffold + toolchain proof
 
 **What landed:**

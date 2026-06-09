@@ -3,7 +3,7 @@
 **Version:** 1.0
 **Date:** 2026-06-09
 **Source:** DISCOVERY.md §13 (proposed batch sequence), sequenced by impact and dependency.
-**Status:** B0 complete (toolchain proven, genesis commit made locally). Next batch to run is B0.5 (tooling switch plus remote), then B1. Plan amended 2026-06-09: push after every batch and Playwright as the standing UI harness are now explicit (D24); the dashboard UI switches from `@tremor/react` to Tailwind plus Recharts-direct (D23).
+**Status:** B0 and B0.5 complete (2026-06-09): toolchain proven, Tailwind v4 + Recharts v3 + Playwright in place, remote pushed. Next batch to run is B1. Plan amended 2026-06-09: push after every batch and Playwright as the standing UI harness are now explicit (D24); the dashboard UI switched from `@tremor/react` to Tailwind v4 plus Recharts-direct (D23, executed as D25).
 
 House rule observed: no em dashes.
 
@@ -21,7 +21,7 @@ One batch, one fresh session. Each batch lists the exact files it may touch and 
 |---|---|---|---|
 | B-pack | Pack generation | Done (2026-06-09) | DISCOVERY.md |
 | B0 | Scaffold + toolchain proof | Done (2026-06-09); Vercel deploy + remote pending human | B-pack |
-| B0.5 | Tooling switch + remote (Tailwind, Recharts-direct, Playwright, git remote + first push) | Remote done + pushed (2026-06-09); Tailwind + Playwright pending (next) | B0 |
+| B0.5 | Tooling switch + remote (Tailwind, Recharts-direct, Playwright, git remote + first push) | Done (2026-06-09); Vercel connect pending human | B0 |
 | B1 | Static credible demo | Not started | B0.5 |
 | B2 | Real ingestion | Not started | B0.5 (uses B1 UI shell) |
 | B3 | Budget and forecast engine | Not started | B2 |
@@ -115,7 +115,7 @@ ai_spend_cfo/
 
 ## B0.5: Tooling switch + remote
 
-- **Status:** Partly done (2026-06-09). Task 1 (git remote + first push) is complete: public repo at https://github.com/Wammiri/ai-spend-cfo, `main` pushed (D18 resolved). Remaining and next: tasks 2 and 3 (Tailwind switch, Playwright), plus the human connecting Vercel.
+- **Status:** Done (2026-06-09). Task 1 (git remote + first push): public repo at https://github.com/Wammiri/ai-spend-cfo, `main` pushed (D18 resolved). Tasks 2 and 3 complete this session: `@tremor/react` dropped and `.npmrc` removed (clean install, `npm ci` 440 pkgs, no peer override); Tailwind CSS v4 set up CSS-first (no `tailwind.config.ts`, tokens in `app/globals.css` `@theme`); Recharts moved to v3 (`3.8.1`); Playwright `1.60.0` installed with Chromium, `playwright.config.ts` + `e2e/smoke.spec.ts` passing. All five gates green (build, lint, typecheck, vitest, playwright). Concrete versions and the v4 deviation recorded as D25. Remaining: the human connecting Vercel for auto-deploy (rung-4 confirmation).
 - **Depends on:** B0.
 - **Goal:** Settle the infrastructure before any product UI is built, so B1 builds on the final stack. Three things, no product design: (1) DONE: git remote + push (D18); (2) switch the UI stack from `@tremor/react` to Tailwind CSS plus Recharts-direct (D23); (3) install Playwright as the standing behavioral harness (D24). Then re-prove the toolchain and push.
 - **Done when:**
