@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+/*
+  Design tokens (Tailwind v4 CSS-first, @theme). This is a restrained BASELINE
+  only: enough for B0.5 to prove a Tailwind-styled element renders. The full
+  institutional-finance-with-modern-execution palette and type scale (D20) are
+  built by the frontend-design skill in B1. Keep this minimal until then.
+
+  Token -> utility mapping: --color-paper => bg-paper/text-paper,
+  --color-ink => text-ink, --color-accent => text-accent, and so on.
+*/
+@theme {
+  --color-paper: #f8fafc;
+  --color-surface: #ffffff;
+  --color-ink: #0f172a;
+  --color-muted: #64748b;
+  --color-hairline: #e2e8f0;
+  --color-accent: #0f766e;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
