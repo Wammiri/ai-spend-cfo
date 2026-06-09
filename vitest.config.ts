@@ -8,5 +8,11 @@ export default defineConfig({
     environment: "node",
     globals: false,
     include: ["lib/**/*.test.ts"],
+    // Use the forks pool, not the default threads pool. On this Windows machine
+    // the threads (worker_threads) pool crashes once several test files run
+    // together with "Cannot read properties of undefined (reading 'config')" (a
+    // worker-state race); forks runs each file in a child process and is stable.
+    // B1 had only two files and never hit it; B2 added five more, which exposed it.
+    pool: "forks",
   },
 });

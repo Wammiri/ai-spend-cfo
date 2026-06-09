@@ -1,0 +1,9 @@
+date,api_key,model,input_tokens,output_tokens,cache_read_input_tokens,requests,cost
+2026-05-04,eng-prod-key,claude-sonnet-4-6,5000000,1000000,0,1200,30.00
+2026-05-04,eng-prod-key,claude-opus-4-8,1000000,400000,0,80,45.00
+2026-05-05,marketing-content-key,claude-opus-4-8,2000000,800000,0,150,90.00
+2026-05-05,support-bot-key,claude-haiku-4-5,8000000,1500000,2000000,9000,15.70
+2026-05-06,finance-fpa-key,claude-opus-4-8,500000,200000,0,20,22.50
+2026-05-06,data-science-eval-key,claude-opus-4-8,3000000,1200000,0,60,142.00
+2026-05-07,test-key-7f3a2b,claude-sonnet-4-6,1500000,500000,0,90,12.00
+2026-05-07,sales-outreach-key,claude-haiku-4-5,2000000,600000,0,700,5.00

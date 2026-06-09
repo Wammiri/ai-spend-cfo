@@ -94,3 +94,57 @@ export interface PricingRow {
   /** ISO YYYY-MM-DD date this price became effective. */
   effective_date: string;
 }
+
+// --- ingestion intermediates (B2) --------------------------------------------
+//
+// A parser turns one upload into `RawUsageRow[]`: the fields the source actually
+// carries, before cost is re-derived (D10) and before the actor-to-team mapping
+// (D14) resolves the governance dimensions. The canonical CSV already carries
+// most dimensions, so those fields are optional and pass straight through; a
+// provider export (Anthropic Console, D5) carries only usage and is resolved by
+// the mapping. `lib/metrics/cost.ts` consumes these and emits CanonicalUsageEvent.
+
+export interface RawUsageRow {
+  /** Calendar date of the usage, ISO YYYY-MM-DD. */
+  date: string;
+  /** Raw actor / API-key / workspace label as it appears in the source. */
+  actor: string;
+  provider: string;
+  model: string;
+  input_tokens: number;
+  output_tokens: number;
+  cached_input_tokens?: number;
+  requests: number;
+  /**
+   * Cost the source reported, when present. Kept only for the D10 reconciliation
+   * delta; `cost_usd` is always re-derived from the pricing table downstream.
+   */
+  reported_cost_usd?: number | null;
+  // Canonical dimensions the source may already carry (canonical CSV). Absent on
+  // provider exports, where the mapping (D14) resolves them.
+  team?: string;
+  workflow?: string;
+  value_tag?: ValueTag;
+  approval_status?: ApprovalStatus;
+  environment?: Environment;
+  project?: string | null;
+  /** Provenance to stamp on the resulting canonical events. */
+  source: Source;
+}
+
+/** A parse problem, reported rather than thrown, so one bad row never kills an upload. */
+export interface ParseIssue {
+  /** 1-based row number in the source file (header is row 0). */
+  row: number;
+  field?: string;
+  message: string;
+  severity: "error" | "warning";
+}
+
+/** What a parser returns: the rows it could read plus every issue it found. */
+export interface ParseResult {
+  rows: RawUsageRow[];
+  issues: ParseIssue[];
+  /** Which parser produced this (for the UI and reconciliation framing). */
+  format: "canonical" | "anthropic-console";
+}
