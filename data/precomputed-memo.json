@@ -1,0 +1,149 @@
+{
+  "meta": {
+    "title": "AI Spend Review",
+    "period_label": "May 2026",
+    "org": "Northstar AI Labs",
+    "prepared_by": "AI Spend CFO, by Aperio Finance",
+    "source_label": "Sample data",
+    "cached": true,
+    "generated_note": "Precomputed once from the Northstar sample dataset and cached. No model call is made on the sample path (D3). The numbers are produced by the deterministic metrics layer; the language is the AI's.",
+    "scope_note": "This first review establishes the spend baseline and the control gaps. Budget variance and forecast scenarios are added once budgets are set."
+  },
+  "headline": [
+    { "label": "Total AI spend", "value_usd": 6260.10, "sub": "May 2026, all providers" },
+    { "label": "On frontier-tier models", "value_usd": 4958.22, "sub": "79% of spend" },
+    { "label": "Low-value workflows", "value_usd": 2214.23, "sub": "35% of spend" },
+    { "label": "Unapproved spend", "value_usd": 1593.84, "sub": "25% of spend" }
+  ],
+  "sections": [
+    {
+      "id": "executive-summary",
+      "number": 1,
+      "heading": "Executive summary",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Northstar AI Labs spent $6,260 on AI usage in May 2026 across Anthropic, OpenAI, and Google, with no formal budget framework or approval gate in place. The spend is concentrated and frontier-heavy: 79% ($4,958) ran on frontier-tier models, and the two largest line items, both in Data Science, account for 39% ($2,430) of the total."
+        },
+        {
+          "type": "paragraph",
+          "text": "Three control gaps stand out. Low-value workflows consumed $2,214 (35% of spend), almost all of it ($2,145) on frontier-tier models where a cheaper tier would serve. Unapproved usage reached $1,594 (25%), and $1,398 (22%) of spend carried no project owner. Finance, by contrast, was disciplined: 2.4% of spend, almost entirely high-value board and variance work. The picture is not a budget overrun, it is an absence of governance, and that is what the recommendations below address."
+        }
+      ]
+    },
+    {
+      "id": "cost-drivers",
+      "number": 2,
+      "heading": "Main cost drivers",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Spend ranked by workflow. Data Science model evaluation and synthetic-data generation lead, followed by Engineering's code assistant. Marketing campaign content generation is the fourth-largest line item and runs predominantly on frontier-tier models for low-complexity content."
+        },
+        {
+          "type": "table",
+          "columns": ["Workflow", "Spend", "Share"],
+          "rows": [
+            { "label": "Data Science / Model evaluation harness", "value_usd": 1457.26, "share": 0.2328 },
+            { "label": "Data Science / Synthetic data generation", "value_usd": 972.27, "share": 0.1553 },
+            { "label": "Engineering / Code assistant", "value_usd": 938.65, "share": 0.1499 },
+            { "label": "Marketing / Campaign content generation", "value_usd": 714.28, "share": 0.1141 },
+            { "label": "Engineering / Agentic test generation", "value_usd": 566.86, "share": 0.0905 },
+            { "label": "Product / Internal documentation", "value_usd": 297.95, "share": 0.0476 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "waste-risk",
+      "number": 3,
+      "heading": "Waste and risk areas",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Each flag below is quantified in dollars from the data. The flags overlap (a single workflow can be low-value, unapproved, and ownerless at once), so they are exposure measures, not a sum to be added."
+        },
+        {
+          "type": "flags",
+          "items": [
+            {
+              "label": "Frontier models on low-value work",
+              "detail": "$2,145 of low-value spend ran on frontier-tier models. Routing this work to a mid or cheap tier is the single largest savings opportunity.",
+              "impact_usd": 2145.20
+            },
+            {
+              "label": "Low-value spend",
+              "detail": "Workflows tagged low value (synthetic data generation, internal documentation, SEO drafting) accounted for 35% of total spend.",
+              "impact_usd": 2214.23
+            },
+            {
+              "label": "Unapproved spend",
+              "detail": "A quarter of spend, concentrated in Data Science experimentation, ran without an approval. Most of it sits in the experiment environment.",
+              "impact_usd": 1593.84
+            },
+            {
+              "label": "Missing owner",
+              "detail": "$1,398 of spend carried no project owner and cannot be attributed to a budget holder.",
+              "impact_usd": 1398.12
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "recommended-controls",
+      "number": 4,
+      "heading": "Recommended controls",
+      "blocks": [
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            { "text": "Establish per-department monthly budgets and caps. No budget framework exists today, so every variance flag downstream depends on this first." },
+            { "text": "Route low-complexity, low-value workflows off frontier-tier models.", "impact_note": "addresses $2,145 of frontier spend on low-value work" },
+            { "text": "Require an approval for any spend in the experiment environment.", "impact_note": "addresses $1,594 of unapproved spend" },
+            { "text": "Assign a project owner to every workflow; block ingestion of ownerless usage.", "impact_note": "addresses $1,398 of ownerless spend" },
+            { "text": "Review the two largest Data Science workflows for value tiering and model fit.", "impact_note": "$2,430 combined, 39% of spend" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "questions",
+      "number": 5,
+      "heading": "Questions for department owners",
+      "blocks": [
+        {
+          "type": "list",
+          "ordered": false,
+          "items": [
+            { "text": "Data Science: is the synthetic-data generation workflow ($972, low value, mostly unapproved) still required at this volume, and can it move to a cheaper tier?" },
+            { "text": "Marketing: campaign content runs on frontier models for low-complexity drafts. What is the quality reason for not using a mid tier?" },
+            { "text": "Engineering: agentic test generation has a meaningful unapproved-experiment share. Should it be promoted to an approved, budgeted workflow?" }
+          ]
+        }
+      ]
+    }
+  ],
+  "needs_review": [
+    {
+      "label": "Sales call-note summarization, ownerless share",
+      "reason": "The ownerless portion of this workflow is below the data floor needed to attribute a cause. It is recorded but excluded from the recommendations above pending an owner mapping."
+    }
+  ],
+  "needs_review_note": "Items marked \"needs review\" lack sufficient data to assign a cause and are excluded from the recommendations above. This is enforced in code, not left to the model's discretion.",
+  "figures": {
+    "total_spend": 6260.10,
+    "total_requests": 119845,
+    "frontier_spend": 4958.22,
+    "low_value_spend": 2214.23,
+    "unapproved_spend": 1593.84,
+    "missing_owner_spend": 1398.12,
+    "frontier_low_value_spend": 2145.20,
+    "data_science_spend": 2607.44,
+    "engineering_spend": 1574.58,
+    "marketing_spend": 981.45,
+    "finance_spend": 147.15,
+    "top_two_ds_workflows": 2429.53
+  }
+}
