@@ -15,6 +15,12 @@
 // the JSON and passes it in, which also makes the layer trivially testable.
 
 import type { CanonicalUsageEvent, ModelTier, Source, ValueTag } from "../types";
+import {
+  computeBudgetLine,
+  summarizeBudgetLines,
+  type BudgetLine,
+} from "./budget";
+import { deriveForecast, type Forecast, type PeriodContext } from "./forecast";
 
 /** A model row in the dataset's lookup (carries tier, which events do not). */
 export interface NorthstarModel {
@@ -37,10 +43,25 @@ export interface NorthstarMeta {
   row_count: number;
 }
 
+/**
+ * One budget row in the dataset (B3, D13). Budgets are modeled in the data so
+ * the sample is reproducible; for the synthetic Northstar set they are
+ * illustrative monthly department budgets, labeled and pending confirmation.
+ */
+export interface Budget {
+  /** Which dimension this budget applies to (team / workflow / model / ...). */
+  dimension: string;
+  /** The key within the dimension (e.g. the department name). */
+  key: string;
+  amount_usd: number;
+}
+
 export interface NorthstarDataset {
   meta: NorthstarMeta;
   models: NorthstarModel[];
   events: CanonicalUsageEvent[];
+  /** Monthly budgets by dimension (B3). Optional: a dataset may carry none. */
+  budgets?: Budget[];
 }
 
 /** A labeled slice of spend with its share (0..1) of the total. */
@@ -215,6 +236,80 @@ export function computeAggregates(dataset: NorthstarDataset): DashboardAggregate
     frontierSpend: sumWhere((e) => tier(e) === "frontier"),
     frontierLowValueSpend: sumWhere((e) => tier(e) === "frontier" && e.value_tag === "low"),
   };
+}
+
+// --- budget vs actual + forecast (B3) ----------------------------------------
+//
+// The pure math lives in budget.ts and forecast.ts. These two functions are the
+// dataset glue: they pull the per-dimension actuals, the daily series, and the
+// low-value total out of the canonical events and feed the pure functions. The
+// dashboard calls these; it never recomputes.
+
+export interface BudgetReport {
+  /** Dimension the budgets are grouped on (team by default). */
+  dimension: string;
+  /** One line per key, sorted by actual spend descending. */
+  lines: BudgetLine[];
+  /** The rolled-up org line (its own status, not an average of the parts). */
+  total: BudgetLine;
+}
+
+/** How each budget dimension keys a canonical event. */
+const DIMENSION_KEY: Record<string, (e: CanonicalUsageEvent) => string> = {
+  team: (e) => e.team,
+  workflow: (e) => `${e.team} / ${e.workflow}`,
+  model: (e) => e.model,
+  project: (e) => e.project ?? "Unassigned",
+  environment: (e) => e.environment,
+};
+
+/**
+ * Build the budget-vs-actual report for a dimension (default "team"). Every key
+ * with a budget OR with spend gets a line, so no spend is hidden and an
+ * unbudgeted key reads "no budget set" rather than a false overrun (D13).
+ */
+export function buildBudgetReport(
+  dataset: NorthstarDataset,
+  ctx: PeriodContext,
+  dimension = "team",
+): BudgetReport {
+  const keyOf = DIMENSION_KEY[dimension] ?? DIMENSION_KEY.team;
+  const budgetByKey = new Map(
+    (dataset.budgets ?? [])
+      .filter((b) => b.dimension === dimension)
+      .map((b) => [b.key, b.amount_usd] as const),
+  );
+  const actualByKey = sumBy(dataset.events, keyOf);
+
+  const keys = new Set<string>([...budgetByKey.keys(), ...actualByKey.keys()]);
+  const lines = [...keys]
+    .map((key) =>
+      computeBudgetLine({
+        key,
+        budget: budgetByKey.get(key) ?? null,
+        actualToDate: actualByKey.get(key) ?? 0,
+        ctx,
+      }),
+    )
+    .sort((a, b) => b.actual - a.actual);
+
+  return { dimension, lines, total: summarizeBudgetLines(lines, ctx) };
+}
+
+/** Build the org-level forecast / scenarios for a period from the events. */
+export function buildOutlook(
+  dataset: NorthstarDataset,
+  ctx: PeriodContext,
+): Forecast {
+  const events = dataset.events;
+  const actualToDate = events.reduce((s, e) => s + e.cost_usd, 0);
+  const lowValueToDate = events.reduce(
+    (s, e) => (e.value_tag === "low" ? s + e.cost_usd : s),
+    0,
+  );
+  const dailyMap = sumBy(events, (e) => e.date);
+  const daily = [...dailyMap.entries()].map(([date, value]) => ({ date, value }));
+  return deriveForecast({ actualToDate, daily, lowValueToDate, ctx });
 }
 
 // --- presentation helpers (display-only; numbers come from above) ------------
