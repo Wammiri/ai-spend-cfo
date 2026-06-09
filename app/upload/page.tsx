@@ -7,6 +7,9 @@ import { KpiCard } from "@/components/kpi-card";
 import { UploadControl, type LoadedFile } from "@/components/upload-control";
 import { MappingEditor } from "@/components/mapping-editor";
 import { ReconciliationPanel } from "@/components/reconciliation-panel";
+import { RiskView } from "@/components/risk-view";
+import { GenerateMemo } from "@/components/generate-memo";
+import { buildMemoInputs } from "@/lib/memo/build-inputs";
 import {
   CompositionDonut,
   DailyTrendChart,
@@ -105,6 +108,13 @@ export default function UploadPage() {
     if (ingest) for (const e of ingest.events) m.set(e.actor, (m.get(e.actor) ?? 0) + e.cost_usd);
     return m;
   }, [ingest]);
+
+  // The code-computed inputs the live memo route consumes (B4). The model never
+  // sees raw data; it receives only these numbers and turns them into language.
+  const memoInputs = useMemo(
+    () => (ingest && parsed ? buildMemoInputs(buildDataset(ingest.events, parsed.source)) : null),
+    [ingest, parsed],
+  );
 
   function reset() {
     setLoaded(null);
@@ -219,6 +229,9 @@ export default function UploadPage() {
               </Panel>
             </div>
 
+            {/* quantified waste / risk with model-tier repricing (B4, D12) */}
+            {memoInputs ? <RiskView flags={memoInputs.riskFlags} /> : null}
+
             {/* honesty notes */}
             {ingest && ingest.unpricedModels.length > 0 ? (
               <p className="text-xs text-caution">
@@ -226,10 +239,12 @@ export default function UploadPage() {
               </p>
             ) : null}
             <p className="text-xs leading-5 text-faint">
-              Composition and waste indicators only. Model-tier savings, budgets,
-              variance, and the live CFO memo are the next release. Tier panels are
-              omitted here rather than shown without the tier model.
+              Composition, model-tier savings, and the live CFO memo below. Budget
+              variance appears once budgets are set for this data.
             </p>
+
+            {/* the live CFO memo (D3): a real Claude call on the uploaded data */}
+            {memoInputs ? <GenerateMemo inputs={memoInputs} /> : null}
           </div>
         ) : null}
       </main>
