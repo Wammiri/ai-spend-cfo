@@ -4,6 +4,8 @@ import { SiteNav } from "@/components/site-nav";
 import { SampleBanner } from "@/components/sample-banner";
 import { KpiCard } from "@/components/kpi-card";
 import { CostDriversTable } from "@/components/cost-drivers-table";
+import { BudgetVsActual } from "@/components/budget-vs-actual";
+import { ForecastOutlook } from "@/components/forecast-outlook";
 import {
   CompositionDonut,
   DailyTrendChart,
@@ -11,6 +13,8 @@ import {
   SpendByTeamChart,
 } from "@/components/charts";
 import {
+  buildBudgetReport,
+  buildOutlook,
   computeAggregates,
   formatNumber,
   formatPercent,
@@ -18,6 +22,7 @@ import {
   type NorthstarDataset,
   type SpendSlice,
 } from "@/lib/metrics/aggregate";
+import { periodContext } from "@/lib/metrics/forecast";
 import northstar from "@/data/northstar.json";
 
 // AI Spend Control Dashboard (B1, spec Module 2). Server component: imports the
@@ -25,7 +30,13 @@ import northstar from "@/data/northstar.json";
 // metrics layer, and hands the results to presentational cards and Recharts
 // wrappers. No budget/forecast/repricing here (B3/B4); composition + waste only.
 
-const agg = computeAggregates(northstar as unknown as NorthstarDataset);
+const dataset = northstar as unknown as NorthstarDataset;
+const agg = computeAggregates(dataset);
+// Period context: the Northstar sample is a closed month (period_status), so the
+// pure layer paces to 1 and projects to actual with no clock read (D13).
+const ctx = periodContext(dataset.meta);
+const budgetReport = buildBudgetReport(dataset, ctx);
+const outlook = buildOutlook(dataset, ctx);
 
 function Panel({
   title,
@@ -141,6 +152,25 @@ export default function DashboardPage() {
           />
         </div>
 
+        {/* budget vs actual + forward outlook (B3) */}
+        <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-3">
+          <Panel
+            title="Budget vs actual"
+            hint={`by department, ${agg.periodLabel}`}
+            className="lg:col-span-2"
+          >
+            <BudgetVsActual report={budgetReport} />
+            <p className="mt-3 text-xs leading-5 text-faint">
+              Department budgets are illustrative for the sample. Status is
+              decided in code: a key with no budget or a too-early month is never
+              reported as an overrun.
+            </p>
+          </Panel>
+          <Panel title="Forward outlook" hint="planning scenarios">
+            <ForecastOutlook forecast={outlook} periodLabel={agg.periodLabel} />
+          </Panel>
+        </div>
+
         {/* charts */}
         <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-3">
           <Panel title="Daily spend" hint={`${agg.activeDays} days`} className="lg:col-span-2">
@@ -187,7 +217,8 @@ export default function DashboardPage() {
           <Link href="/methodology" className="text-accent underline-offset-2 hover:underline">methodology</Link>{" "}
           for how cost is derived, or{" "}
           <Link href="/upload" className="text-accent underline-offset-2 hover:underline">import</Link>{" "}
-          your own export. Budgets, forecasts, and the live memo arrive next.
+          your own export. Budgets and the forward outlook are computed here; the
+          live, on-demand memo arrives next.
         </p>
       </main>
     </div>
