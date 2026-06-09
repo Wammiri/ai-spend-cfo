@@ -1,0 +1,78 @@
+# SESSION LOG: AI Spend CFO
+
+Appended after every session. Never deleted. Newest entry on top.
+
+House rule observed: no em dashes.
+
+---
+
+## 2026-06-09, B0: Scaffold + toolchain proof
+
+**What landed:**
+- Scaffolded Next.js 16 (App Router) on React 19 with the approved dependency set, pinned to exact versions, lockfile committed. Files: `package.json`, `tsconfig.json` (Next auto-finalized `jsx` and a dev-types include on first build), `next.config.mjs`, `eslint.config.mjs`, `vitest.config.ts`, `.npmrc`, `.env.example`, `.gitignore`, `README.md`, `app/layout.tsx`, `app/page.tsx` (placeholder), `lib/types.ts` (canonical usage + pricing schema, DISCOVERY §7), `lib/metrics/index.ts` (documented empty barrel), and one seed test `lib/metrics/seed.test.ts`.
+- Resolved the toolchain frictions that surfaced (recorded as D22): Tremor 3.18.7's stale React-18 peer (committed `.npmrc legacy-peer-deps=true`), Recharts aligned to Tremor's v2 line (`2.15.4`), and ESLint moved off the broken `@eslint/eslintrc` FlatCompat bridge onto `eslint-config-next` 16's native flat config (dropped `@eslint/eslintrc`).
+- Initialized git and made the genesis commit (building pack plus scaffold) on `main`. No push (D18: remote choice is the human's).
+
+**Verification:** Rung 1 (build + lint clean) plus the test runner passing, all four green simultaneously on the untouched tree:
+- `npm run build` (next build, Turbopack): success, 2 static routes.
+- `npm run lint` (eslint flat config): clean, exit 0.
+- `npm run typecheck` (tsc --noEmit, strict): clean, exit 0.
+- `npm run test` (vitest run): 1 file, 3 tests passed.
+The lint gate is calibrated to pass on the scaffold (no pre-existing legacy debt to forgive; build artifacts ignored). Secret scan before commit: only `.env.example` with an empty `ANTHROPIC_API_KEY`; `.gitignore` excludes `.env*` and `node_modules`.
+
+**Network note (machine-specific, not committed):** this machine is behind a TLS-inspecting corporate proxy. Node's bundled CA store does not trust the proxy's root CA, so `npm install` failed with `UNABLE_TO_VERIFY_LEAF_SIGNATURE` (curl/SChannel separately failed with `CRYPT_E_NO_REVOCATION_CHECK`). Fix used for installs: `NODE_OPTIONS=--use-system-ca` (Node trusts the Windows trust store). A transient `ECONNRESET` mid-install was recovered by retry settings (more fetch retries, fewer concurrent sockets). Documented in `README.md` and D22; deliberately kept out of the repo.
+
+**Commits pushed:** None. One local genesis commit on `main` (see flags). Pushing is blocked pending the human's remote choice (D18).
+
+**Flags for you:**
+- **D18 (remote + push):** the repo is initialized and committed locally but has no remote. Choose a git remote, add it, and push. Nothing is backed up off this machine until you do.
+- **Vercel deploy:** B0's "deployable empty app live on Vercel" needs your Vercel account. The app builds clean and is deployable; the actual deploy and project link are a human gate. Confirm the Vercel project.
+- **B1 / Tremor decision (D22):** Tremor 3.18.7 is stale (last published 2025-01-13; v4 beta only) and needs Tailwind CSS set up before its components render. It installs and builds fine on React 19 via legacy-peer-deps, but decide before B1 whether to keep it or switch (new copy-paste Tremor, or Recharts-direct). The switch is cheap now (no UI built on it yet); it gets expensive once B1 builds the dashboard.
+- **ANTHROPIC_API_KEY** and **pricing values** remain the previously-flagged human gates (before B4 and B2 respectively).
+
+**Parked:** Vercel deploy and remote/push (both human gates above).
+
+**Next:** Batch B1 (static credible demo), fresh session. Resolve the Tremor decision first if you want to avoid a possible mid-B1 swap.
+
+---
+
+## 2026-06-09, B-pack: Pack generation (setup batch)
+
+**What landed:**
+- Read the onboarding source (DISCOVERY.md in full) and the source PRD (AI_Spend_CFO_Spec_v1.md in full). The methodology onboarding files did not exist yet; this session creates them.
+- Created `CLAUDE.md`: identity, architectural laws, AI boundary, tech stack (D16), conventions, control matrix pointer, human gates, onboarding read order, per-batch discipline.
+- Created `DECISIONS.md`: D1 through D16 from DISCOVERY §5 expanded with what was traded off and status; D17 (internal module layout) and D18 (source control pending) surfaced during generation; controls C1/C2 as enforcement decisions; the deferred non-goals table with triggers; human gates.
+- Created `BATCH_PLAN.md`: status board, a concrete proposed file layout, batches B0 through B5 each with goal, done-criteria, bounded file list, verification rung, dependencies, and flags; the session prompt template at the bottom.
+- Created `CHANGELOG.md`: Keep-a-Changelog format, Unreleased section seeded with the pack.
+
+**Verification:** No toolchain exists yet (no `package.json`), so the build/lint/test rungs do not apply to this batch. Proof was a manual cross-check: every decision ID (D1 to D16) traced back to DISCOVERY §5; the deferred non-goals traced to DISCOVERY §10; the human gates to DISCOVERY §12; the batches to DISCOVERY §13; the control matrix to DISCOVERY §8. The spec PRD was cross-referenced for the canonical schema (spec §5/§8), the memo prompt structure (spec §7), and the credibility checklist (spec §9). House style (no em dashes) was applied throughout.
+
+**Commits pushed:** None. The working directory is not a git repository (D18). Git init, remote choice, and the first commit are deferred to Batch B0 and flagged below. Pushing was not requested in this session.
+
+**Flags for you:**
+- D18 (source control): the directory is not a git repo. Choose a git remote and confirm the Vercel project. Batch B0 will git init and make the first commit of the pack plus scaffold. No push happens until you choose a remote.
+- D5 (pending reconfirm): the first real provider export is assumed to be the Anthropic Console usage/cost export. Confirm the exact export format available in your console before Batch B2 builds the parser.
+- ANTHROPIC_API_KEY: to be set by you on Vercel before Batch B4 (the live memo route). Code reads it; you set the value.
+- Pricing values (D11): you confirm the seeded pricing table values before Batch B2 ships the methodology page that presents them as authoritative.
+
+**Parked:** Nothing.
+
+**Next:** Batch B0 (scaffold + toolchain proof) in a fresh session. B0 and B1 must not share a session. Use the session prompt template at the bottom of BATCH_PLAN.md.
+
+### Addendum, same day: plan amendment for a skill-driven build
+
+A new requirement surfaced before B0: build through high-quality skills rather than a generic build. Per the methodology, it entered through the plan (we are still in setup with no code), not a batch in flight.
+
+- Recorded D19 (skill-driven build approach), D20 (visual design language: institutional finance with modern execution), and D21 (memo PDF via a bespoke authored skill) in DECISIONS.md.
+- Updated BATCH_PLAN.md: added a "Skills woven into the build" mapping; annotated B1/B2/B4 with their skills; inserted a new B5 (author the `cfo-memo-pdf` skill with `write-a-skill`) and renumbered the old export batch to B6; amended D4's PDF note.
+- **New flag (D21 engine):** the memo-PDF skill defaults to `@react-pdf/renderer` as its engine (one-line switch). If higher fidelity is wanted for the offline hero PDF, the skill can use a typesetting engine for the hero while the live runtime stays on `@react-pdf`. Confirm at B5.
+- No code, no dependencies added. Skills are tooling. The B0-next status is unchanged.
+
+### Addendum, same day: grill on the finance-report-pdf skill, engine change
+
+The PDF skill was reframed from a project-local memo helper into a standalone, GLOBAL, reusable asset at a JP Morgan craft bar, usable across all Aperio products. Ran the `grill-me` skill to define it. Eleven threads resolved (archetypes, input schema, page furniture, theming, typography, engine, truth boundary, charts, editable source, reuse/runtime, non-goals). Full output captured in `FINANCE_PDF_SKILL_DISCOVERY.md`.
+
+- **Engine decision:** Typst (native furniture, programmatic theming, OFL font embedding, and a `typst.ts` wasm build so one template renders both at dev-time and in the live app). This **supersedes `@react-pdf/renderer`**, which is dropped from the AI Spend CFO stack.
+- **Pack reconciled:** updated D16 (dropped `@react-pdf`, added `typst.ts` runtime) and D21 (global Typst skill, full grill outcome) in DECISIONS.md; updated BATCH_PLAN.md (status board, skills table, B0 deps, file layout, and B5 rewritten from "author the skill" to "integrate the global skill"). The skill is authored separately as a side quest, not inside the AI Spend CFO sequence.
+- **New flag:** the global `finance-report-pdf` skill must be authored (its own session, via `write-a-skill`) before AI Spend CFO B5 can integrate it.
+- Still no AI Spend CFO product code. B0 remains the next AI Spend CFO batch.
