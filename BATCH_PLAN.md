@@ -3,7 +3,7 @@
 **Version:** 1.0
 **Date:** 2026-06-09
 **Source:** DISCOVERY.md §13 (proposed batch sequence), sequenced by impact and dependency.
-**Status:** B0 and B0.5 complete (2026-06-09): toolchain proven, Tailwind v4 + Recharts v3 + Playwright in place, remote pushed. Next batch to run is B1. Plan amended 2026-06-09: push after every batch and Playwright as the standing UI harness are now explicit (D24); the dashboard UI switched from `@tremor/react` to Tailwind v4 plus Recharts-direct (D23, executed as D25).
+**Status:** B0, B0.5, and B1 complete (2026-06-09): toolchain proven, Tailwind v4 + Recharts v3 + Playwright in place, remote pushed, and the static credible demo (landing + dashboard + cached hero memo on labeled Northstar sample data) is built and green on all gates. Next batch to run is B2. Plan amended 2026-06-09: push after every batch and Playwright as the standing UI harness are now explicit (D24); the dashboard UI switched from `@tremor/react` to Tailwind v4 plus Recharts-direct (D23, executed as D25); B1 scope/design and the production-server Playwright harness recorded as D26.
 
 House rule observed: no em dashes.
 
@@ -22,7 +22,7 @@ One batch, one fresh session. Each batch lists the exact files it may touch and 
 | B-pack | Pack generation | Done (2026-06-09) | DISCOVERY.md |
 | B0 | Scaffold + toolchain proof | Done (2026-06-09); Vercel deploy + remote pending human | B-pack |
 | B0.5 | Tooling switch + remote (Tailwind, Recharts-direct, Playwright, git remote + first push) | Done (2026-06-09); Vercel connect pending human | B0 |
-| B1 | Static credible demo | Not started | B0.5 |
+| B1 | Static credible demo | Done (2026-06-09) | B0.5 |
 | B2 | Real ingestion | Not started | B0.5 (uses B1 UI shell) |
 | B3 | Budget and forecast engine | Not started | B2 |
 | B4 | Waste/risk + AI memo | Not started | B3 |
@@ -130,7 +130,7 @@ ai_spend_cfo/
 
 ## B1: Static credible demo
 
-- **Status:** Not started.
+- **Status:** Done (2026-06-09). Landing + dashboard + cached hero memo on the labeled Northstar sample (synthetic, closed month May 2026). All gates green: build (4 static routes), lint, typecheck, Vitest (17, incl. memo<->data reconciliation), Playwright (8). Scope/design/out-of-list files recorded as D26. Pushed; Vercel deploy pending human connect. Composition + waste only; budgets/forecast/repricing are B3/B4.
 - **Depends on:** B0.5.
 - **Goal:** Landing plus dashboard plus a precomputed memo on the canonical Northstar sample data. The hero loads instantly from the cached memo (D3), with no AI call on the sample path.
 - **Done when:** a stranger understands the product in 10 seconds on the landing page and sees a real-looking memo; Northstar is labeled "sample" everywhere (credibility checklist).

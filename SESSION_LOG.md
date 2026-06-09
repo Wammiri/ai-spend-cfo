@@ -6,6 +6,37 @@ House rule observed: no em dashes.
 
 ---
 
+## 2026-06-09, B1: Static credible demo (landing + dashboard + cached memo)
+
+Built the first product surfaces on the B0.5 Tailwind v4 baseline, to the D20 brief via the `frontend-design` skill. Scope, design, and the four out-of-list files are recorded as D26.
+
+**What landed:**
+- **Northstar sample dataset (synthetic, labeled).** `data/generate-northstar.mjs` (committed, seeded, no deps) produces `data/northstar.json`: 558 aggregated events across 7 departments for the closed month of May 2026, every row `source: "synthetic"`, costs DERIVED from tokens at embedded illustrative prices. Total $6,260.10; frontier-tier 79.2%; low-value $2,214.23 (35.4%); unapproved $1,593.84; missing-owner $1,398.12. The story: an AI lab spending without finance controls, frontier-heavy, with clear avoidable spend in Marketing/Product and a disciplined Finance team.
+- **Deterministic aggregation layer.** `lib/metrics/aggregate.ts`: pure read-only sums/groupings (composition + waste indicators) plus display formatters and a deterministic em-dash stripper. No budgets/forecast/repricing (B3/B4). `lib/metrics/aggregate.test.ts`: fixture unit tests for the functions PLUS a reconciliation suite asserting every figure in the cached memo equals the computed aggregate (a B1 precursor to control C2).
+- **Cached hero memo.** `data/precomputed-memo.json`: hand-authored board-ready memo (D3, no live call on the sample path), structured for the eventual finance-report-pdf schema. Frames itself as the first governance review (recommends setting budgets), quantifies four dollar-backed flags, and carries an in-code `needs_review` exclusion to demonstrate the C1 honesty stance.
+- **UI (audit-grade ledger, D20).** Full token palette in `app/globals.css` (warm paper, ledger-green accent, oxblood/ochre semantics, serif+sans, tabular numerals; system fonts, no web-font fetch, see D26). Components: `site-nav`, `sample-banner` (honest labeling), `kpi-card`, `charts` (Recharts-direct: dept bar, daily-trend area, tier/value donuts, model bar, all client), `cost-drivers-table`, `memo-view` (the typeset hero). Pages: landing (`app/page.tsx`, leads with the memo and the governance-not-monitoring line), dashboard (`app/dashboard/page.tsx`, KPIs + 8 panels), memo (`app/memo/page.tsx`).
+
+**Verification:** Rung 3 (Playwright) plus rung 2 (Vitest), all green.
+- `npm run build`: success, 4 static routes (/, /dashboard, /memo, /_not-found). (Recharts logs two benign width(-1) SSR warnings during static prerender; charts measure and render client-side, confirmed by the e2e.)
+- `npm run lint`, `npm run typecheck`: clean.
+- `npm run test` (vitest): 2 files, 17 tests passed (aggregation correctness + memo<->data reconciliation + honest-labeling + helpers).
+- `npx playwright test`: 8 passed in ~17s (landing pitch + both CTAs navigate, dashboard renders the Northstar numbers and draws charts, memo renders board-grade with the needs-review honesty line, sample labeling present, stack-applied smoke). The harness now builds and serves a production server and runs serial (D26): the dev server's per-route Turbopack compile under parallel workers blew the test budget; the production+serial run is fast and reliable.
+- Secret scan before commit: only the historical incident reference in SESSION_LOG matches the key pattern; no secret in any committed file. `.env.local` stays gitignored; `.next/`, `test-results/`, `playwright-report/` ignored.
+
+**Commits pushed:** see below; pushed to `origin/main` at the end of the batch (Vercel auto-deploys once the human connects it).
+
+**Flags for you:**
+- **Four files beyond the literal B1 list (D26):** `app/globals.css` (full D20 palette, anticipated by B0.5), `lib/metrics/aggregate.test.ts` (the module's matching test), `data/generate-northstar.mjs` (reproducible dataset source), `playwright.config.ts` (production + serial harness for reliability). All justified and recorded; flagging per the discipline.
+- **Design + sample framing (D26):** confirm the audit-grade-ledger look and the closed-month "first governance review" memo framing. Both reversible.
+- **Typography:** system serif/sans by choice (proxy-robust, no new dep). A licensed web font is a cheap later upgrade. Say if you want one now.
+- Standing gates unchanged: **Vercel connect** (auto-deploy + the rung-4 "deploy is live" check), **ANTHROPIC_API_KEY** before B4, **pricing values** before B2, and rotating the exposed B0 key.
+
+**Parked:** Vercel connect (human gate). Nothing else.
+
+**Next:** Batch B2 (real ingestion): canonical CSV upload, the Anthropic Console parser (D5, reconfirm export format), pricing-table cost derivation + reconciliation (D10/D11), actor-to-team mapping (D14), and the methodology page (gated on confirming pricing values). Uses the B1 UI shell.
+
+---
+
 ## 2026-06-09, B0.5: Tooling switch (Tailwind + Recharts v3 + Playwright)
 
 Completed the rest of B0.5 (task 1, the git remote + first push, was already done in a prior session). This session did tasks 2 (UI stack switch) and 3 (Playwright), then re-proved the toolchain and pushed.
