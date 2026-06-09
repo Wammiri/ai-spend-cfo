@@ -9,8 +9,46 @@
     "label": "Sample data",
     "generated_by": "data/generate-northstar.mjs",
     "note": "Synthetic sample. Costs are derived from token counts at embedded illustrative prices for the demo; the authoritative pricing table is built in B2 (D11).",
+    "budgets_note": "Illustrative monthly department budgets for the sample (B3), not confirmed business figures.",
     "row_count": 558
   },
+  "budgets": [
+    {
+      "dimension": "team",
+      "key": "Data Science",
+      "amount_usd": 2000
+    },
+    {
+      "dimension": "team",
+      "key": "Engineering",
+      "amount_usd": 1600
+    },
+    {
+      "dimension": "team",
+      "key": "Marketing",
+      "amount_usd": 700
+    },
+    {
+      "dimension": "team",
+      "key": "Product",
+      "amount_usd": 600
+    },
+    {
+      "dimension": "team",
+      "key": "Customer Support",
+      "amount_usd": 500
+    },
+    {
+      "dimension": "team",
+      "key": "Finance",
+      "amount_usd": 250
+    },
+    {
+      "dimension": "team",
+      "key": "Sales",
+      "amount_usd": 150
+    }
+  ],
   "models": [
     {
       "provider": "anthropic",

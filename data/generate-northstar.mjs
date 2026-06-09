@@ -156,6 +156,24 @@ for (let day = 1; day <= DAYS_IN_MONTH; day++) {
   }
 }
 
+// --- illustrative monthly department budgets (B3, D13) ------------------------
+// These are SAMPLE budgets for the synthetic demo, not confirmed business
+// figures (budgets are a product/business input, a human gate). They are chosen
+// so the variance view tells an honest governance story: Data Science and
+// Marketing run over budget (the avoidable-spend teams), Engineering lands right
+// at budget, and the disciplined teams (Finance, Support, Sales) come in under.
+// Defined after event generation so the seeded RNG (and every event) is
+// untouched; only this block is appended.
+const BUDGETS = [
+  { dimension: "team", key: "Data Science", amount_usd: 2000 },
+  { dimension: "team", key: "Engineering", amount_usd: 1600 },
+  { dimension: "team", key: "Marketing", amount_usd: 700 },
+  { dimension: "team", key: "Product", amount_usd: 600 },
+  { dimension: "team", key: "Customer Support", amount_usd: 500 },
+  { dimension: "team", key: "Finance", amount_usd: 250 },
+  { dimension: "team", key: "Sales", amount_usd: 150 },
+];
+
 // --- assemble dataset ---------------------------------------------------------
 const modelList = Object.entries(MODELS).map(([model, m]) => ({
   provider: m.provider,
@@ -174,8 +192,10 @@ const dataset = {
     label: "Sample data",
     generated_by: "data/generate-northstar.mjs",
     note: "Synthetic sample. Costs are derived from token counts at embedded illustrative prices for the demo; the authoritative pricing table is built in B2 (D11).",
+    budgets_note: "Illustrative monthly department budgets for the sample (B3), not confirmed business figures.",
     row_count: events.length,
   },
+  budgets: BUDGETS,
   models: modelList,
   events,
 };
@@ -214,3 +234,16 @@ console.log(`  Unapproved spend: ${fmt(sum(events.filter((e) => e.approval_statu
 console.log(`  Missing-owner spend: ${fmt(sum(events.filter((e) => e.project === null), (e) => e.cost_usd))}`);
 console.log(`  Frontier-tier spend: ${fmt(sum(events.filter((e) => tierOf(e.model) === "frontier"), (e) => e.cost_usd))} (${pct(sum(events.filter((e) => tierOf(e.model) === "frontier"), (e) => e.cost_usd))})`);
 console.log(`  Frontier-on-low-value spend: ${fmt(sum(events.filter((e) => tierOf(e.model) === "frontier" && e.value_tag === "low"), (e) => e.cost_usd))}`);
+
+console.log("\nBudget vs actual (closed month, illustrative sample budgets):");
+const actualByTeam = new Map(byKey((e) => e.team));
+let budgetTotal = 0;
+for (const b of BUDGETS) {
+  const actual = actualByTeam.get(b.key) ?? 0;
+  budgetTotal += b.amount_usd;
+  const v = actual - b.amount_usd;
+  const verdict = v > 0 ? `${fmt(v)} over` : `${fmt(-v)} under`;
+  console.log(`  ${b.key}: budget ${fmt(b.amount_usd)}, actual ${fmt(actual)} (${verdict}, ${((actual / b.amount_usd) * 100).toFixed(0)}%)`);
+}
+const totalVar = total - budgetTotal;
+console.log(`  TOTAL: budget ${fmt(budgetTotal)}, actual ${fmt(total)} (${totalVar > 0 ? fmt(totalVar) + " over" : fmt(-totalVar) + " under"})`);
