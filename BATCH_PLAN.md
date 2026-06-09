@@ -3,7 +3,7 @@
 **Version:** 1.0
 **Date:** 2026-06-09
 **Source:** DISCOVERY.md §13 (proposed batch sequence), sequenced by impact and dependency.
-**Status:** B0, B0.5, and B1 complete (2026-06-09): toolchain proven, Tailwind v4 + Recharts v3 + Playwright in place, remote pushed, and the static credible demo (landing + dashboard + cached hero memo on labeled Northstar sample data) is built and green on all gates. Next batch to run is B2. Plan amended 2026-06-09: push after every batch and Playwright as the standing UI harness are now explicit (D24); the dashboard UI switched from `@tremor/react` to Tailwind v4 plus Recharts-direct (D23, executed as D25); B1 scope/design and the production-server Playwright harness recorded as D26.
+**Status:** B0, B0.5, B1, and B2 complete (2026-06-09): toolchain proven, Tailwind v4 + Recharts v3 + Playwright in place, remote pushed, the static credible demo built, and real ingestion shipped (canonical + Anthropic Console parsers, versioned pricing, cost derivation + reconciliation, editable owner mapping, methodology page, in-browser upload surface), all green on all gates (49 Vitest, 13 Playwright). Next batch to run is B3. Plan amended 2026-06-09: push after every batch and Playwright as the standing UI harness are now explicit (D24); the dashboard UI switched from `@tremor/react` to Tailwind v4 plus Recharts-direct (D23, executed as D25); B1 scope/design recorded as D26; B2 ingestion architecture/scope as D27 and its file-list refinements, the Vitest forks-pool fix, and standing human gates as D28.
 
 House rule observed: no em dashes.
 
@@ -23,7 +23,7 @@ One batch, one fresh session. Each batch lists the exact files it may touch and 
 | B0 | Scaffold + toolchain proof | Done (2026-06-09); Vercel deploy + remote pending human | B-pack |
 | B0.5 | Tooling switch + remote (Tailwind, Recharts-direct, Playwright, git remote + first push) | Done (2026-06-09); Vercel connect pending human | B0 |
 | B1 | Static credible demo | Done (2026-06-09) | B0.5 |
-| B2 | Real ingestion | Not started | B0.5 (uses B1 UI shell) |
+| B2 | Real ingestion | Done (2026-06-09); rung-4 (builder's real export) pending human | B0.5 (uses B1 UI shell) |
 | B3 | Budget and forecast engine | Not started | B2 |
 | B4 | Waste/risk + AI memo | Not started | B3 |
 | B5 | Integrate finance-report-pdf skill | Not started | B4, and the skill authored separately |
@@ -141,7 +141,7 @@ ai_spend_cfo/
 
 ## B2: Real ingestion
 
-- **Status:** Not started.
+- **Status:** Done (2026-06-09). Shipped: versioned pricing table (D11), cost derivation + reconciliation (D10), canonical + Anthropic Console parsers (D5, format isolated in `COLUMN_MAP` for reconfirm), editable actor-to-team mapping (D14), the methodology page (with the "pending confirmation" pricing label), and the in-browser `/upload` surface (parse, normalize, reconcile, map live). Scope is composition + tier-free waste, mirroring B1 (frontier/repricing is B4/D12; budgets/forecast is B3). All gates green: build (6 routes), lint, typecheck, Vitest (49), Playwright (13). Architecture/scope recorded as D27; the `public/` fixture path, the added `/upload` route, the Vitest forks-pool fix, and the standing human gates as D28. Sample fixtures live in `public/`. Pushed; Vercel deploy pending human connect. **Rung-4 (the builder's real Anthropic export) is the open human gate**, plus confirming pricing values (D11) and the exact Anthropic export format (D5).
 - **Depends on:** B0 (uses the B1 UI shell for the upload surface).
 - **Goal:** Canonical CSV upload, the Anthropic Console parser (D5), pricing-table cost derivation with reconciliation (D10/D11), and the actor-to-team mapping (D14). Ship the "how cost is calculated" methodology page.
 - **Done when:** the builder's own real Anthropic export drops in, normalizes to the canonical schema, derives cost, reconciles against any reported cost, and the dashboard is correct on real numbers (Tier-1 anchor + Tier-2 parse, two credibility-checklist boxes).

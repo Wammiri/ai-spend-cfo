@@ -6,6 +6,40 @@ House rule observed: no em dashes.
 
 ---
 
+## 2026-06-09, B2: Real ingestion (parsers, cost + reconciliation, mapping, methodology, upload)
+
+Built the full ingestion path on the B1 shell: an upload is parsed in-browser, normalized to the canonical schema, cost re-derived from a versioned pricing table, reconciled against any provider-reported cost, and owners resolved through a visible editable mapping. Architecture, scope, and the deviations are recorded as D27 and D28.
+
+**What landed:**
+- **Pricing table (D11).** `lib/pricing/pricing-table.ts`: a curated, effective-date-versioned table (Anthropic + common OpenAI/Google models), `selectPrice` (latest row with `effective_date <= event date`), `pricedModels`, and `PRICING_CONFIRMED = false` (the pricing human gate as a one-line switch). Values are illustrative list prices, labeled "pending confirmation".
+- **Cost engine (D10).** `lib/metrics/cost.ts`: `deriveCost` (the deterministic formula, cached tokens fall back to the input rate), `reconcileValue` (1% threshold + absolute floor), and `buildCanonicalEvents`, the single ingestion orchestrator (resolve dims, re-derive cost, reconcile, emit canonical events + a reconciliation summary + unpriced-model and unmapped-actor lists). Cost is always re-derived; a reported figure is stored only for the delta; an unpriced model is surfaced, never silently zeroed.
+- **Owner mapping (D14).** `lib/mapping/actor-team.ts`: rule list, `DEFAULT_MAPPING` (seeded to the sample export's keys), `resolveDimensions` (canonical rows keep their own dims; export actors resolve by rule; unmapped fall to Unassigned + null project -> missing-owner). Approval is never inferred by the mapping.
+- **Parsers.** `lib/parsers/canonical-csv.ts` (Papa Parse of the canonical schema; tolerant header aliases; real-date validation; row + size caps; issues reported not thrown) and `lib/parsers/anthropic-console.ts` (D5; the assumed columns isolated in `COLUMN_MAP` as a one-line reconfirm seam, with `looksLikeAnthropicExport` auto-detect). New intermediate types (`RawUsageRow`, `ParseIssue`, `ParseResult`) in `lib/types.ts`.
+- **Methodology page.** `app/methodology/page.tsx` (DISCOVERY section 9 box): the honesty stance stated openly, the cost formula, the reconciliation method, and the versioned pricing table with the "pending confirmation" label and a prior Opus row to make versioning visible; CTAs to import and to download the sample CSV.
+- **Upload surface.** `app/upload/page.tsx` plus `components/upload-control.tsx`, `components/mapping-editor.tsx`, `components/reconciliation-panel.tsx`: load a file or a bundled sample, parse + normalize + reconcile + map live (editing the mapping recomputes the dashboard). Scope is composition + tier-free waste indicators (no frontier/repricing/tier panel; that is B4/D12). Nav gained Import + Methodology links; the dashboard footer and sample banner now point to the live pages (their "next release" claims were stale).
+- **Fixtures.** `public/sample-anthropic-export.csv` (8 rows, tells the reconciliation + missing-owner story: one model diverges 1.9% from reported, one key is unmapped) and `public/sample-canonical.csv` (downloadable canonical template). In `public/` so the in-browser parser can fetch them and the methodology page can link the download (D28).
+
+**Verification:** Rung 1 + rung 2 + rung 3 all green; rung 4 (real export) is the human gate.
+- `npm run build`: success, 6 static routes (/, /dashboard, /memo, /methodology, /upload, /_not-found). Same benign Recharts width(-1) SSR warnings as B1.
+- `npm run lint`, `npm run typecheck`: clean.
+- `npm run test` (Vitest): 7 files, 49 tests pass (pricing versioning, cost formula + reconciliation, mapping resolution, both parsers including the full pipeline on the sample exports, plus the B1 suites). Set `pool: "forks"` to fix a Windows threads-pool crash that surfaced once 7 files ran together (D28).
+- `npx playwright test`: 13 pass (~49s) incl. new methodology (formula, pricing, pending-confirmation, honesty stance) and upload (Anthropic sample parses + reconciles + flags the divergent model + surfaces the unmapped key; editing the mapping clears missing-owner live; canonical CSV needs no mapping and has nothing to reconcile).
+- Secret scan before commit: no key pattern in any tracked file (the historical reference lives only in this log/DECISIONS); `.env.local` stays gitignored.
+
+**Commits pushed:** see below; pushed to `origin/main` at the end of the batch (Vercel auto-deploys once the human connects it).
+
+**Flags for you (human gates, none cleared this batch):**
+- **Pricing values (D11):** the seeded table is illustrative and labeled "pending confirmation". Confirm the values against current vendor pricing and flip `PRICING_CONFIRMED` in `lib/pricing/pricing-table.ts`.
+- **Anthropic export format (D5):** the parser assumes a column set isolated in `COLUMN_MAP`. Reconfirm the exact headers your console exports today; adjusting is a one-line change. `public/sample-anthropic-export.csv` shows the assumed shape.
+- **Your real spend (D9):** `data/own-spend.csv` was not created (fabricating real data would break honest labeling). Drop your real Anthropic export into `/upload`, or commit it as `data/own-spend.csv`, to close the rung-4 "real numbers" credibility box. The pipeline is built and proven on the sample.
+- **Standing:** Vercel connect (auto-deploy + rung-4 deploy-live check), `ANTHROPIC_API_KEY` before B4, and rotating the exposed B0 key.
+
+**Parked:** the rung-4 live proof on the builder's real export (pending the human providing it); Vercel connect.
+
+**Next:** Batch B3 (budget and forecast engine): budgets by dimension, variance, pace, projection, scenarios, and the forecast guards (D13), all pure functions, proven at rung 2 against a hand-check.
+
+---
+
 ## 2026-06-09, B1: Static credible demo (landing + dashboard + cached memo)
 
 Built the first product surfaces on the B0.5 Tailwind v4 baseline, to the D20 brief via the `frontend-design` skill. Scope, design, and the four out-of-list files are recorded as D26.
