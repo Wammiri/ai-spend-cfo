@@ -10,6 +10,7 @@ All notable changes to this product are recorded here. Format follows Keep a Cha
 
 ### Changed
 - Plan amended (2026-06-09) for a skill-driven build: added D19 (skills mapped to batches), D20 (institutional-finance-with-modern-execution design language), and D21 (memo PDF produced by a bespoke authored `cfo-memo-pdf` skill). BATCH_PLAN.md gained a skills mapping, per-batch skill annotations, and a new batch B5 (author the PDF skill); the old export batch became B6.
+- Plan amended again (2026-06-09, post-B0): dropped `@tremor/react` in favor of Tailwind CSS plus Recharts-direct (D23); made "commit and push after every batch" and "Playwright as the standing UI harness" explicit project rules (D24). Inserted batch B0.5 (tooling switch plus git remote) before B1, updated CLAUDE.md's tech stack and per-batch discipline, and reconciled stale stack references. No product code changed.
 
 ### Notes
 - No product code yet. The toolchain (Next.js scaffold, dependencies, test runner) is stood up in Batch B0, which is the first code batch and a separate session from pack generation.

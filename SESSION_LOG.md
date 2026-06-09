@@ -32,7 +32,20 @@ The lint gate is calibrated to pass on the scaffold (no pre-existing legacy debt
 
 **Parked:** Vercel deploy and remote/push (both human gates above).
 
-**Next:** Batch B1 (static credible demo), fresh session. Resolve the Tremor decision first if you want to avoid a possible mid-B1 swap.
+**Next:** Batch B0.5 (tooling switch + remote), fresh session, then B1.
+
+### Addendum, same day: plan amendment (D23, D24) and a secret-handling incident
+
+New requirements surfaced from the user after B0. Per the methodology they entered through the plan, not a batch in flight (B0 is already closed). No product code was executed this turn; only the plan and the next-session prompt were prepared, as the user asked.
+- **D23:** drop `@tremor/react`, switch the UI stack to Tailwind CSS plus Recharts-direct, built with `frontend-design`. Resolves the B0/D22 Tremor flag (the user chose to switch).
+- **D24:** two standing process rules made explicit in CLAUDE.md and BATCH_PLAN.md: commit AND push after every batch (a batch is not done until pushed; Vercel auto-deploys on push), and Playwright as the standing behavioral / UI harness for every UI batch.
+- **Plan updates:** inserted **B0.5 (tooling switch + remote)** between B0 and B1 to do the remote + push, the Tailwind/Recharts switch, and the Playwright install before any UI is built. Updated the status board, the skills table, the file layout, B1's dependency, and added a ready-to-copy B0.5 session prompt at the bottom of BATCH_PLAN.md. Reconciled CLAUDE.md's tech stack (which still listed `@react-pdf/renderer` and Tremor) to D21 and D23.
+- **Answered:** where the API key goes (`.env.local` for local dev, Vercel env vars for production; `.env.local` is gitignored and only needed at B4).
+- **Secret incident:** the user pasted a live `ANTHROPIC_API_KEY` directly into the tracked `.env.example` template. Caught it immediately. Reverted `.env.example` to an empty value (it now matches the committed HEAD, so the key was never committed and is not in git history), moved the value into the gitignored `.env.local`, and added a rotation reminder. Verified with `git grep "sk-ant-api03"` that no tracked file contains the key and with `git check-ignore` that `.env.local` is ignored. **Flagged the user to rotate the key** (it appeared in plaintext in chat, so treat it as exposed).
+
+**Commits (addendum):** one local plan-amendment commit (docs only). Still no remote (B0.5 sets it up), so still not pushed.
+
+**Next (updated):** Batch B0.5 using the filled prompt at the bottom of BATCH_PLAN.md.
 
 ---
 

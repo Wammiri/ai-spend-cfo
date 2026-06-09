@@ -3,11 +3,15 @@
 **Version:** 1.0
 **Date:** 2026-06-09
 **Source:** DISCOVERY.md §13 (proposed batch sequence), sequenced by impact and dependency.
-**Status:** B0 complete (toolchain proven, genesis commit made locally). Next batch to run is B1. Pending human: git remote + push, Vercel deploy, and the B1 Tremor decision (D22).
+**Status:** B0 complete (toolchain proven, genesis commit made locally). Next batch to run is B0.5 (tooling switch plus remote), then B1. Plan amended 2026-06-09: push after every batch and Playwright as the standing UI harness are now explicit (D24); the dashboard UI switches from `@tremor/react` to Tailwind plus Recharts-direct (D23).
 
 House rule observed: no em dashes.
 
 One batch, one fresh session. Each batch lists the exact files it may touch and touches nothing else (exception: a renamed shared function pulls its call sites into the same batch). State which rung of the verification ladder was used in SESSION_LOG.md. The pack-generation batch (B-pack) and the scaffold batch (B0) are separate sessions; B0 and B1 must not share a session (DISCOVERY §13).
+
+**Two standing rules (D24), applied to every batch from B0.5 on:**
+1. **Commit AND push at the end of every batch.** A batch is not complete until it is pushed to the git remote (set up at B0.5). Vercel auto-deploys on push, so every pushed batch is also deployed.
+2. **Playwright is the standing behavioral / UI harness.** Every batch that ships or changes UI gets a Playwright check (rung 3); pure-logic batches prove at the Vitest logic/regression rung (no browser for pure math). Playwright is installed at B0.5.
 
 ---
 
@@ -17,8 +21,9 @@ One batch, one fresh session. Each batch lists the exact files it may touch and 
 |---|---|---|---|
 | B-pack | Pack generation | Done (2026-06-09) | DISCOVERY.md |
 | B0 | Scaffold + toolchain proof | Done (2026-06-09); Vercel deploy + remote pending human | B-pack |
-| B1 | Static credible demo | Not started (next) | B0 |
-| B2 | Real ingestion | Not started | B0 (uses B1 UI shell) |
+| B0.5 | Tooling switch + remote (Tailwind, Recharts-direct, Playwright, git remote + first push) | Not started (next) | B0 |
+| B1 | Static credible demo | Not started | B0.5 |
+| B2 | Real ingestion | Not started | B0.5 (uses B1 UI shell) |
 | B3 | Budget and forecast engine | Not started | B2 |
 | B4 | Waste/risk + AI memo | Not started | B3 |
 | B5 | Integrate finance-report-pdf skill | Not started | B4, and the skill authored separately |
@@ -34,12 +39,12 @@ This is a skill-driven build, not a generic one. Each batch invokes the skill(s)
 
 | Skill | Where it is used | What it raises |
 |---|---|---|
-| `frontend-design` | B1, B6 | All UI craft: landing, dashboard, memo view, methodology page, export surface. Design language is institutional finance with modern execution (D20). Avoids the generic AI-dashboard look. |
+| `frontend-design` | B0.5, B1, B6 | All UI craft, built directly on Tailwind CSS with Recharts-direct (no Tremor, D23): landing, dashboard, KPI cards, chart wrappers, memo view, methodology page, export surface. Design language is institutional finance with modern execution (D20). Avoids the generic AI-dashboard look. |
 | `claude-api` | B2 (Haiku classification), B4 (memo route) | Correct, current Anthropic SDK usage: model IDs, tool use, token counting, caching. Keeps the AI layer right rather than coded from memory. |
 | `write-a-skill` | side quest (then B5 consumes it) | Authors the global `finance-report-pdf` skill (Typst, D21) to a JP Morgan craft bar, reusable across all Aperio products. Built in its own session per `FINANCE_PDF_SKILL_DISCOVERY.md`, not inside the AI Spend CFO sequence. |
 | `security-review` | B2, B4 | Adversarial pass on untrusted upload parsing (B2) and the server memo route plus prompt-injection from uploaded data (B4). |
 | `code-review`, `simplify` | every batch, pre-push | Correctness and cleanup pass before each commit. |
-| `verify`, `run` | B1, B2, B6 | Drive the real app and observe behavior for the rung 3 and rung 4 checks; capture the hero screenshot. |
+| `verify`, `run` | B1, B2, B6 | Drive the real app and observe behavior for the rung 3 and rung 4 checks; capture the hero screenshot. Playwright (D24) is the standing rung-3 harness, installed at B0.5. |
 
 ---
 
@@ -49,8 +54,12 @@ Batch B0 creates this skeleton. Later batches reference these paths. B0 may adju
 
 ```
 ai_spend_cfo/
-  package.json, tsconfig.json, next.config.mjs, .eslintrc.json, .env.example
+  package.json, tsconfig.json, next.config.mjs, eslint.config.mjs, .env.example, .npmrc
+  tailwind.config.ts, postcss.config.mjs    Tailwind setup (B0.5, D23)
+  vitest.config.ts                          unit test runner (B0)
+  playwright.config.ts, e2e/                 behavioral harness (B0.5, D24)
   app/
+    globals.css                            Tailwind directives + design tokens (B0.5/B1)
     layout.tsx
     page.tsx                       landing
     dashboard/page.tsx
@@ -104,15 +113,30 @@ ai_spend_cfo/
 - **Dependencies to install (approved set only, pinned):** `next`, `react`, `react-dom`, `typescript`, `@tremor/react`, `recharts`, `papaparse`, `@anthropic-ai/sdk`, plus the chosen test runner. PDF is NOT a B0 dependency: `@react-pdf/renderer` is dropped (D21), and the `typst.ts` runtime is added at B5 when the `finance-report-pdf` skill is integrated. Any addition beyond this set is a decision recorded in DECISIONS.md first.
 - **Flags / human gates:** add `ANTHROPIC_API_KEY` to `.env.example` (value set by the human on Vercel later, before B4). Choose the git remote (human) and confirm the Vercel project. D18 is resolved here.
 
-## B1: Static credible demo
+## B0.5: Tooling switch + remote
 
 - **Status:** Not started (next).
 - **Depends on:** B0.
+- **Goal:** Settle the infrastructure before any product UI is built, so B1 builds on the final stack. Three things, no product design: (1) connect the git remote and push (finish D18); (2) switch the UI stack from `@tremor/react` to Tailwind CSS plus Recharts-direct (D23); (3) install Playwright as the standing behavioral harness (D24). Then re-prove the toolchain and push.
+- **Done when:**
+  - The repo has a remote and `main` is pushed; Vercel is connected so it auto-deploys on push (human confirms the deploy is live).
+  - `@tremor/react` is removed; Tailwind CSS is configured (config, PostCSS, `app/globals.css` directives imported in the layout) and a Tailwind-styled element renders; Recharts is on its current v3 line; the `.npmrc` `legacy-peer-deps` line is removed and install is clean with no peer override.
+  - Playwright is installed with its browser(s) and a smoke e2e (load `/`, assert the title and a Tailwind-styled element) passes headless.
+  - `next build`, `eslint`, `tsc --noEmit`, `vitest run`, and the Playwright smoke are all green; committed and pushed.
+- **Files to touch:** `package.json`, `package-lock.json`, `.npmrc` (remove), `tailwind.config.ts`, `postcss.config.mjs`, `app/globals.css`, `app/layout.tsx` (import globals.css), `app/page.tsx` (convert the placeholder to Tailwind classes), `playwright.config.ts`, `e2e/smoke.spec.ts`, `.gitignore` (Playwright artifacts), `README.md` (Tailwind + Playwright + remote notes). Git: add the remote and push.
+- **Skills:** `frontend-design` for the Tailwind baseline setup; `verify` / `run` to confirm the app and the deploy.
+- **Verification rung:** rung 1 (build / lint / typecheck) plus Vitest, plus a rung-3 Playwright smoke, plus a rung-4 confirmation that the Vercel deploy is live after the push (human-confirmed).
+- **Flags / human gates:** choose and connect the git remote (host, repo name, public or private) and connect Vercel to it. Default proposal to confirm at session start: a public GitHub repo named `ai-spend-cfo` (it is a portfolio artifact meant to be shared). No code depends on the choice; only the remote URL does.
+
+## B1: Static credible demo
+
+- **Status:** Not started.
+- **Depends on:** B0.5.
 - **Goal:** Landing plus dashboard plus a precomputed memo on the canonical Northstar sample data. The hero loads instantly from the cached memo (D3), with no AI call on the sample path.
 - **Done when:** a stranger understands the product in 10 seconds on the landing page and sees a real-looking memo; Northstar is labeled "sample" everywhere (credibility checklist).
-- **Files to touch:** `app/page.tsx`, `app/dashboard/page.tsx`, `app/memo/page.tsx`, `components/*` (KPI cards, charts, memo view, sample-data banner), `data/northstar.json`, `data/precomputed-memo.json`, `lib/metrics/aggregate.ts` (read-only aggregations for display).
-- **Skills:** `frontend-design` builds every surface to the institutional-finance-with-modern-execution brief (D20); `run` and `verify` drive the app and capture the hero screenshot.
-- **Verification rung:** rung 3 (behavioral/UI check with Playwright or equivalent): landing renders, dashboard renders the Northstar numbers, memo view renders the cached memo, sample labeling is present.
+- **Files to touch:** `app/page.tsx`, `app/dashboard/page.tsx`, `app/memo/page.tsx`, `components/*` (KPI cards, Recharts-direct chart wrappers, memo view, sample-data banner), `data/northstar.json`, `data/precomputed-memo.json`, `lib/metrics/aggregate.ts` (read-only aggregations for display), plus the matching `e2e/*.spec.ts`.
+- **Skills:** `frontend-design` builds every surface directly on Tailwind (no Tremor, D23) to the institutional-finance-with-modern-execution brief (D20); `run` and `verify` drive the app and capture the hero screenshot.
+- **Verification rung:** rung 3 (Playwright, D24): landing renders, dashboard renders the Northstar numbers, memo view renders the cached memo, sample labeling is present. Push at the end (auto-deploys).
 - **Flags / human gates:** none new. The precomputed memo content is generated once and committed; if it uses a live call to produce, that is a one-time build step, not a per-visit call.
 
 ## B2: Real ingestion
@@ -191,6 +215,56 @@ push at the end, update SESSION_LOG and BATCH_PLAN status.
 Stop before any destructive or production change and flag me.
 Flag any new env var for me to set. Label any legal or policy text DRAFT.
 For any ambiguity, pick a sensible default, isolate it as a one-line switch, and flag it.
+
+One batch only. Stop and report when done or paused.
+```
+
+---
+
+## Filled prompt for the next session (B0.5), ready to copy
+
+```
+Read the onboarding files first: DECISIONS.md, SESSION_LOG.md, BATCH_PLAN.md.
+Consult DISCOVERY.md for product intent if this batch touches it.
+
+Context not obvious from a skim, stated explicitly:
+- B0 is done: Next.js 16 + React 19 scaffold, toolchain proven, a genesis commit on
+  `main` that is NOT pushed (no remote yet).
+- This machine is behind a TLS-inspecting corporate proxy. Run installs with
+  NODE_OPTIONS=--use-system-ca or npm fails with UNABLE_TO_VERIFY_LEAF_SIGNATURE
+  (README has the detail). This is machine-specific and not committed.
+- D23: drop @tremor/react, switch to Tailwind CSS + Recharts-direct.
+- D24: push after every batch; Playwright is the standing UI harness.
+- The user's ANTHROPIC_API_KEY is in .env.local (gitignored); recommend rotating it
+  (it was exposed). Not needed until B4.
+
+Batch: B0.5 (Tooling switch + remote)
+Tasks:
+1. Remote + push: confirm the remote target with the user (default: a public GitHub
+   repo named `ai-spend-cfo`), add it, push `main` (finishes D18). Confirm Vercel is
+   connected so it auto-deploys on push.
+2. UI stack switch (D23): remove @tremor/react; set up Tailwind CSS (tailwind.config.ts,
+   postcss.config.mjs, app/globals.css imported in app/layout.tsx); move Recharts to its
+   current v3 line; remove the .npmrc legacy-peer-deps line and reinstall clean
+   (NODE_OPTIONS=--use-system-ca); convert app/page.tsx to Tailwind classes.
+3. Playwright (D24): install Playwright and its browser(s); add playwright.config.ts and
+   e2e/smoke.spec.ts (load /, assert the title and a Tailwind-styled element); add
+   Playwright artifacts to .gitignore.
+
+Files to touch, only these: package.json, package-lock.json, .npmrc (remove),
+tailwind.config.ts, postcss.config.mjs, app/globals.css, app/layout.tsx, app/page.tsx,
+playwright.config.ts, e2e/smoke.spec.ts, .gitignore, README.md.
+
+Verification: rung 1 (next build, eslint, tsc --noEmit) + vitest run + the Playwright
+smoke (rung 3), all green on the untouched tree before commit. After the push, confirm
+the Vercel deploy is live (rung 4, human-confirmed).
+
+Follow the protocol: bounded file list, build and lint before commit, one commit per
+task as type(scope): ID description, push at the end (this batch creates the remote, so
+it is the first push), update SESSION_LOG and BATCH_PLAN status.
+
+Flag the remote choice for the human before pushing. Never commit a secret; .env.local
+stays gitignored. For any ambiguity, pick a sensible default, isolate it, and flag it.
 
 One batch only. Stop and report when done or paused.
 ```

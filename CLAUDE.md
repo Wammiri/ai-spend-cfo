@@ -39,17 +39,19 @@ Memo model: Opus-class (quality is the differentiator, volume is low). Value-tag
 
 ---
 
-## Tech stack (D16)
+## Tech stack (D16, D21, D23)
 
 - Next.js (App Router) on Vercel. The single serverless route at `app/api/memo/route.ts` handles the live upload memo with the API key held server-side and rate limiting.
 - TypeScript throughout.
-- Tremor for the dashboard (built on Recharts). Recharts directly only where Tremor lacks a chart.
+- Tailwind CSS for styling. The dashboard and every UI surface are built with the `frontend-design` skill to the institutional-finance-with-modern-execution brief (D20), on Tailwind. `@tremor/react` is dropped (D23): it was stale (last published 2025-01-13, a React-18 peer) and forced a legacy-peer-deps override. We build the cards and chart wrappers directly instead, for full control of the D20 look.
+- Recharts (direct) for charts.
 - Papa Parse for CSV.
-- `@react-pdf/renderer` for PDF. jsPDF is dropped (D4).
+- PDF via the global `finance-report-pdf` skill (Typst engine), integrated at B5: dev-time generates the committed hero memo PDF, the live "Download PDF" renders the same template at runtime via `typst.ts` (wasm). `@react-pdf/renderer` and jsPDF are both dropped (D21, D4).
 - Anthropic SDK for the memo and the value-tag classification calls.
+- Vitest for the deterministic compute tests; Playwright for behavioral / UI checks (D24, installed at B0.5).
 - No database in v1. Sample data ships as bundled static JSON/CSV. Uploads are parsed in-browser, computed in pure functions, rendered, and exported. Nothing persists (D2).
 
-A dependency is a decision (methodology §5). The four product libraries above plus the Anthropic SDK are the approved set. Anything else is justified, checked for maintenance, pinned, and recorded in DECISIONS.md before it is added. The default answer to a new dependency is no.
+A dependency is a decision (methodology §5). The approved product set is Tailwind CSS, Recharts, Papa Parse, the Anthropic SDK, and (at B5) the Typst runtime for the PDF skill; Vitest and Playwright are the test and verification tools. Anything else is justified, checked for maintenance, pinned, and recorded in DECISIONS.md before it is added. The default answer to a new dependency is no.
 
 ---
 
@@ -76,8 +78,9 @@ Full rows (risk, enforcement location, failure behavior, test) live in DISCOVERY
 
 ## Human gates (only the human does these, DISCOVERY §12)
 
-- Set `ANTHROPIC_API_KEY` on Vercel. Code reads it; the human sets the value. Needed before Batch B4.
+- Set `ANTHROPIC_API_KEY`. Code reads it; the human sets the value. For local dev, copy `.env.example` to `.env.local` (gitignored) and put the key there. For production, set it in the Vercel project under Settings, Environment Variables (not a file). Needed before Batch B4.
 - Confirm the seeded pricing data values before the methodology page presents them as authoritative (a product/business input). Needed before Batch B2 ships the methodology page.
+- Choose and connect the git remote (a business decision). Once connected, Vercel auto-deploys on push. Set up at B0.5.
 - No destructive database gates exist in v1, because there is no database.
 
 ---
@@ -90,4 +93,4 @@ DECISIONS.md, then SESSION_LOG.md, then BATCH_PLAN.md. Consult DISCOVERY.md for 
 
 ## Per-batch discipline (from the methodology)
 
-One batch, one fresh session. Touch only the files the batch lists in BATCH_PLAN.md. Match the verification ladder rung to the change: a UI or behavior batch gets a behavioral check (Playwright or equivalent), a pure-logic batch proves itself at the logic/regression rung. For anything permission- or honesty-gated, a check is not done until it proves both the allowed case and the forbidden one. Build and lint before commit. Scan the diff for secrets before pushing. One commit per task as `type(scope): ID description`. Push at the end. Update SESSION_LOG.md and BATCH_PLAN.md status. Stop after one batch; do not chain into the next.
+One batch, one fresh session. Touch only the files the batch lists in BATCH_PLAN.md. Match the verification ladder rung to the change: every batch that ships or changes UI gets a Playwright behavioral check (Playwright is the standing harness, installed at B0.5); a pure-logic batch proves itself at the logic/regression rung with Vitest (do not drive a browser for pure math). For anything permission- or honesty-gated, a check is not done until it proves both the allowed case and the forbidden one. Build and lint before commit. Scan the diff for secrets before pushing. One commit per task as `type(scope): ID description`. Commit AND push to the remote at the end of every batch: a batch is not complete until it is pushed (Vercel then auto-deploys). Update SESSION_LOG.md and BATCH_PLAN.md status. Stop after one batch; do not chain into the next.
