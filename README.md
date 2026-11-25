@@ -1,71 +1,105 @@
 # AI Spend CFO
 
-The FP&A layer for AI spend. It turns raw AI usage logs into budget variance,
-spend forecasts, waste detection, and a CFO-ready control memo. Shipped under the
-Aperio Finance umbrella.
+Budget control for AI spend. It turns raw AI usage logs into budget variance, spend forecasts, waste detection and a control memo a CFO can read.
 
-Positioning: AI cost governance for finance, not AI analytics for engineering.
-The hero is the CFO memo, not the charts.
+**Live demo:** <https://ai-spend-cfo.vercel.app>
 
-This is a portfolio / credibility artifact: a single-tenant public demo with no
-auth, no multi-tenancy, and no database in v1. See `DISCOVERY.md` and
-`DECISIONS.md` for the full rationale.
+It is a portfolio demo: one public instance, with no accounts and no database. The sample data is a made-up company.
 
-## Tech stack
+## What it does
 
-- Next.js (App Router) on Vercel, TypeScript throughout.
-- Tailwind CSS v4 for styling (CSS-first: tokens live in `app/globals.css` under `@theme`); Recharts (direct) for charts. UI is built with the `frontend-design` skill to the institutional-finance-with-modern-execution brief.
-- Papa Parse for CSV ingestion.
-- Anthropic SDK for the memo and the value-tag classification calls.
-- Vitest for the deterministic compute tests; Playwright for behavioral / UI checks (the standing rung-3 harness).
-- PDFs are produced via the global `finance-report-pdf` skill (Typst), integrated at Batch B5.
+1. **Reads usage.** Upload a CSV of AI usage, or start from the sample data.
+2. **Normalises cost.** Usage is priced and grouped by department, workflow, model or environment.
+3. **Compares to budget.** Pace, variance and projected month-end.
+4. **Finds waste and risk.**
+5. **Writes the control memo.** Claude turns the computed figures into plain language.
 
-All numbers are computed by pure functions in `lib/metrics`. The AI never
-calculates; it turns already-computed numbers into language (see `CLAUDE.md`).
+Every number is computed by pure functions in `lib/metrics`. The AI never calculates. It only puts finished numbers into words.
+
+## Stack
+
+- Next.js 16 (App Router), React 19 and TypeScript
+- Tailwind CSS 4 and Recharts
+- Papa Parse for CSV files
+- Anthropic SDK for the memo and for tagging usage by value
+- Vitest for the calculations, Playwright for the interface
+- Hosted on Vercel
+
+## Run it locally
+
+Needs Node.js 20.9 or later.
+
+```bash
+git clone https://github.com/Wammiri/ai-spend-cfo.git
+cd ai-spend-cfo
+npm ci
+cp .env.example .env.local
+npm run dev      # http://localhost:3000
+```
+
+| Variable | Needed for |
+| --- | --- |
+| `ANTHROPIC_API_KEY` | Writing a memo for an uploaded file. The sample memo is stored in the repo, so the demo runs without a key |
 
 ## Scripts
 
-```bash
-npm run dev        # local dev server
-npm run build      # production build (proves the toolchain)
-npm run lint       # eslint (flat config, eslint-config-next)
-npm run typecheck  # tsc --noEmit
-npm run test       # vitest run (deterministic compute layer)
-npm run test:e2e   # playwright test (behavioral / UI smoke)
+| Script | What it does |
+| --- | --- |
+| `npm run dev` | Local dev server |
+| `npm run build` | Production build |
+| `npm run start` | Serves the production build |
+| `npm run lint` | ESLint |
+| `npm run typecheck` | TypeScript check |
+| `npm test` | Unit tests for the calculations (Vitest) |
+| `npm run test:e2e` | Browser tests (Playwright). Run `npx playwright install chromium` once first |
+
+## Project structure
+
+```text
+app/           pages (landing, dashboard, upload, memo, methodology) and the API
+components/    interface pieces and charts
+lib/metrics/   every calculation
+lib/parsers/   reading usage files
+lib/mapping/   matching columns in an uploaded file
+lib/pricing/   model prices
+lib/memo/      building and checking the memo
+data/          the sample company and its stored memo
+e2e/           Playwright tests
 ```
 
-Playwright needs its browser once: `npx playwright install chromium` (behind a
-TLS-inspecting proxy, run it with `$env:NODE_OPTIONS = "--use-system-ca"`).
+## Status
 
-## Local setup behind a TLS-inspecting corporate proxy
+Built: the demo, CSV upload, budgets and forecasts, waste and risk checks, and the AI memo. Not built yet: PDF reports, and export and sharing. [BATCH_PLAN.md](BATCH_PLAN.md) has the detail.
 
-If your machine sits behind a corporate proxy that performs TLS inspection, the
-proxy's root CA is trusted by Windows but not by Node's bundled CA store, so
-`npm install` fails with `UNABLE_TO_VERIFY_LEAF_SIGNATURE`. Make Node trust the
-OS certificate store for the install:
+## Documentation
+
+| File | What is in it |
+| --- | --- |
+| [DISCOVERY.md](DISCOVERY.md) | What the product is for, and its control matrix |
+| [DECISIONS.md](DECISIONS.md) | What was chosen and why |
+| [BATCH_PLAN.md](BATCH_PLAN.md) | The work, batch by batch |
+| [CHANGELOG.md](CHANGELOG.md) | What changed in the product |
+
+<details>
+<summary>Installing behind a corporate proxy that inspects TLS</summary>
+
+On a machine where a proxy replaces certificates, Node may fail with `UNABLE_TO_VERIFY_LEAF_SIGNATURE`. Tell Node to trust the operating system's certificates, then install:
 
 ```powershell
 $env:NODE_OPTIONS = "--use-system-ca"
 npm install
 ```
 
-This is a per-machine network workaround and is deliberately not committed to the
-repo (Vercel and unproxied machines do not need it). The same `--use-system-ca`
-env also lets the Playwright browser download succeed. There is no repo-level
-`.npmrc`: the install is clean with no peer override (the old `legacy-peer-deps`
-flag existed only for Tremor, which was removed in B0.5).
-
-Pushing over HTTPS through the same proxy also fails its certificate revocation
-check. This repo's local git config disables that check:
+The same setting lets the Playwright browser download work. If pushing with git fails its certificate revocation check:
 
 ```powershell
 git config --local http.schannelCheckRevoke false
 ```
 
-That setting lives in `.git/config` (not tracked) and is also per-machine.
+Both are settings for that one machine and are not part of the repo.
 
-## The building pack
+</details>
 
-State lives in files, not chat. Read order each session: `DECISIONS.md`, then
-`SESSION_LOG.md`, then `BATCH_PLAN.md`. `DISCOVERY.md` holds product intent and
-the control matrix; `CLAUDE.md` is the project's operating rules.
+## Author
+
+[Isaac Olorode](https://isaac.aperio.finance), under [Aperio Finance](https://aperio.finance). No open-source licence is granted.
